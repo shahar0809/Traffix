@@ -21,6 +21,10 @@ class Detector:
     height = 0
     width = 0
 
+    min_confidence = 0
+    threshold = 0
+    COLORS = None
+
     # Results of predictions
     boxes = []
     confidences = []
