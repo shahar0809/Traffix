@@ -17,10 +17,14 @@ class YoloDetector(detector.Detector):
     :type WEIGHTS_PATH: str
     :cvar LABELS_PATH: The directory of the  net's output labels.
     :type LABELS_PATH: str
-    :param min_confidence: Minimum probability to filter weak detections
-    :type min_confidence: float
-    :param threshold: Threshold when applying non-maxima suppression
-    :type threshold: float
+    :cvar CLASSES_IDS:
+    :type CLASSES_IDS:
+    :param `net`: The YOLO net loaded from the files.
+    :type net: Net (OpenCV class)
+    :param `layer_names`: Names of layers with unconnected outputs in the net.
+    :type layer_names: list<str>
+    :param `layer_outputs`: Blob for first output of the unconnected layers.
+    :type layer_outputs: Mat (OpenCv class) [n dimensional dense array]
     """
 
     CLASSES_IDS = {1, 2, 3, 5, 7}

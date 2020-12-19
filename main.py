@@ -12,6 +12,7 @@ def main():
     # Create window with freedom of dimensions
     cv.imshow("Traffix", result)
     cv.waitKey(0)
+    cv.destroyAllWindows()
 
 
 if __name__ == '__main__':

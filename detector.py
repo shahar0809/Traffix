@@ -7,13 +7,30 @@ import cv2
 
 class Detector:
     """
+    Wrapper for ML.
     Detects relevant object in a certain frame or a video.
     The relevant object are vehicles such as cars, buses, trucks, bicycles and motorbikes.
     This class may be extended to a self made model (not YOLO).
-    :param `_path`: The path of the input video
-    :type _path: str
-    :param `_output_name`: The name of the output video that contains detections
-    :type _output_name: str
+    :param `height`: Height of the current image.
+    :type height: int
+    :param `width`: Width of the current image.
+    :type width: int
+    :cvar `NET_INPUT_SIZE`: Size (width and height) of the net's input image.
+    :type NET_INPUT_SIZE: int
+    :param `min_confidence`: Minimum probability to filter weak detections.
+    :type min_confidence: float
+    :param `threshold`: Threshold for non-maxima suppression.
+    :type threshold: float
+    :param `COLORS`: Contains the color for each class (label).
+    :type COLORS: list<tuple(int, int, int)>
+    :param `LABELS`: Contains the labels of the classes that can be detected.
+    :type LABELS: list<str>
+    :param `boxes`: A list of the bounding boxes of the objects detected.
+    :type boxes: Depends on the implementation.
+    :param `confidences`: A list of the confidences of each object detected.
+    :type confidences: list<float>
+    :param `classIDs`: A list of the classes of the objects detected.
+    :type classIDs: list<int>
     """
 
     height = 0
