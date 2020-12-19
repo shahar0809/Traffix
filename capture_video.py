@@ -1,5 +1,5 @@
 import cv2
-import time
+
 
 class Capture:
     """
@@ -16,6 +16,7 @@ class Capture:
     TIME_GAP = 30
     _frames = [[]]
     _iteration = 0
+    _curr_frames = []
 
     def video_capture(self):
         raise NotImplementedError
@@ -32,10 +33,6 @@ class Capture:
             # Capture frame-by-frame
             ret, frame = cap.read()
             if ret is False: break
-
-            # Opening a new window and showing the frame
-            cv2.namedWindow('Traffix Video Stream', cv2.WINDOW_NORMAL)
-            cv2.imshow("Traffix Video Stream", frame)
 
             if self._iteration % self.TIME_GAP == 0:
                 self.add_frame(frame)
@@ -54,6 +51,9 @@ class Capture:
         :param frame: The frame to be added
         :return: None
         """
+
+        if len(self._curr_frames) < self.GROUP_SIZE:
+            self._curr_frames += frame
 
         # If the list is empty, create a new group containing the frame
         if len(self._frames) == 0: self._frames.append([frame])
@@ -90,17 +90,17 @@ class Capture:
         @:rtype: boolean
         """
         # Getting the key pressed
-        pressedKey = cv2.waitKey(1) & 0xFF
+        pressed_key = cv2.waitKey(1) & 0xFF
 
         # Getting the current group of frames
-        if pressedKey == ord('g'):
+        if pressed_key == ord('g'):
             try:
                 print(len(self.get_frames()))
 
             except Exception as e:
                 print(e), print()
 
-        return pressedKey == ord('q')
+        return pressed_key == ord('q')
 
 
 class LiveCapture(Capture):

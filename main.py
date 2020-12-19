@@ -1,26 +1,18 @@
 import yolo_detection as yolo
-import capture_video as cv
-import time
-
-# Checking capture file module
-def capture_video_main():
-    capture = cv.user_interaction()
-
-    print("Press 'q' to quit")
-    print("Press 'g' to get frames")
-    time.sleep(2)
-
-    capture.capture_frames()
+import capture_video as cap
+import cv2 as cv
 
 
-# Checking detections module
-def detector_main():
-    video_path = input("Enter the path of the input video:\n")
-    video_name = input("Enter the path of the output video:\n")
-    detector = yolo.YoloDetector(video_path, video_name, 0.5, 0.3)
+def main():
+    detector = yolo.YoloDetector(0.5, 0.3)
 
-    detector.run_detections()
+    # Detect objects in image
+    image = cv.imread('a.jpeg')
+    result = detector.detect_objects(image)
+    # Create window with freedom of dimensions
+    cv.imshow("Traffix", result)
+    cv.waitKey(0)
 
 
 if __name__ == '__main__':
-    detector_main()
+    main()

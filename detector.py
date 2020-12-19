@@ -2,8 +2,8 @@
 This module is responsible for detecting vehicles in specific frames.
 Using YOLO, we can detect cars, motorbikes, trucks, bicycles and buses.
 """
-
 import cv2
+
 
 class Detector:
     """
@@ -15,59 +15,47 @@ class Detector:
     :param `_output_name`: The name of the output video that contains detections
     :type _output_name: str
     """
-    _input_path = ''
-    _output_path = ''
 
     height = 0
     width = 0
+    NET_INPUT_SIZE = 416
 
     min_confidence = 0
     threshold = 0
     COLORS = None
+    LABELS = None
 
     # Results of predictions
     boxes = []
     confidences = []
     classIDs = []
 
-    def __init__(self, input_path, output_path):
+    def __init__(self, threshold, min_confidence):
         """
         Initializes the detector with the input and output paths.
-        :param path: Path to input video
-        :type path: str
-        :param output_name: Path to output video
-        :type output_name: str
+        :param `threshold`: Threshold when applying non-maxima suppression
+        :type threshold: float
+        :param `min_confidence`: Minimum probability to filter weak detections
+        :type min_confidence: float
         :return:
         """
-        self._input_path = input_path.replace('"', '')
-        self._output_path = output_path.replace('"', '')
+        self.threshold = threshold
+        self.min_confidence = min_confidence
 
-    def show_video(self):
-        """
-        Displays an image that's located in the path inputted.
-        :return: None
-        """
-        cap = cv2.VideoCapture(self._path)
-
-        while True:
-            # Reading frames from the video
-            ret, frame = cap.read()
-            if ret is False: break
-
-            # Getting width and height of the frame
-            height, width = frame.shape[:2]
-
-            # Smoothing the frame
-            resized_image = cv2.resize(frame, (3 * width, 3 * height), interpolation=cv2.INTER_CUBIC)
-
-            # Displaying the frame in a window that fits the screen
-            cv2.namedWindow('Traffix Video Stream', cv2.WINDOW_NORMAL)
-            cv2.imshow("Traffix Video Stream", resized_image)
-
-            # Release the capture
-            cap.release()
-            cv2.destroyAllWindows()
-
-    def run_detections(self):
+    def detect_objects(self, frame):
         raise NotImplementedError
 
+    def put_bounding_box(self, index, frame):
+        # extract the bounding box coordinates
+        (x, y) = (self.boxes[index][0], self.boxes[index][1])
+        (w, h) = (self.boxes[index][2], self.boxes[index][3])
+
+        # Get the color of the label detected
+        color = [int(c) for c in self.COLORS[self.classIDs[index]]]
+        # Create a rectangle according to the bounding box's coordinates
+        cv2.rectangle(frame, (x, y), (x + w, y + h), color, 2)
+        # Creating a text with the class of the prediction and its confidence
+        text = "{}: {:.4f}".format(self.LABELS[self.classIDs[index]], self.confidences[index])
+        # Putting the text to display
+        cv2.putText(frame, text, (x, y - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
+        return frame
