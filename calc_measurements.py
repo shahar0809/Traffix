@@ -80,9 +80,11 @@ class VehicleMeasure:
             return x + w, y + h
 
     def calc_velocity(self, box1, box2, duration):
+        # TODO: Get fps from capture
         dist_diff = self.calc_distance(box2) - self.calc_distance(box1)
         return dist_diff / (1 / self.fps)
 
     def calc_acceleration(self, box1, box2, box3, duration):
+         # TODO: Get fps from capture
         velocity_diff = self.calc_velocity(box2, box3) - self.calc_velocity(box1, box2)
         return velocity_diff / (1 / self.fps)
