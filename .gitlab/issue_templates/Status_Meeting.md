@@ -2,7 +2,7 @@
 * Use this issue template to summarize Status Meetings.
 * Make sure to replace all the relevant references of names and issue numbers. -->
 
-# Weekly Status Team num - Meeting num
+# Weekly Status 704 num - Meeting num
 <!-- Meeting metadata. Replace once and update the template. -->
 Previous status-meeting summary can be found under  #issuenum.
 <br>
