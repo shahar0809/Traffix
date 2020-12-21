@@ -6,7 +6,7 @@
 <!-- Meeting metadata. Replace once and update the template. -->
 Previous status-meeting summary can be found under  #issuenum.
 <br>
-@TeamMember1, @TeamMember2, @DanGlazer, @Rakaz are notified.
+@shahar0809, @yaara_16, @DanGlazer, @davidw4, @yariv.zur are notified.
 
 ## Past Week
 ### Unfinished Tasks
@@ -22,11 +22,11 @@ Previous status-meeting summary can be found under  #issuenum.
 ## This Week
 ### Todo
 <!-- Include here all tasks, new and unfinished (but with new deadlines). -->
-- TeamMember1 
+- Shahar
   - [ ] Task 1 - #issuenum - (due date)
   - [ ] Task 2 - #issuenum - (due date)
   - [ ] Task 3 - #issuenum - (due date)
-- TeamMember2 
+- Yaara
   - [ ] Task 1 - #issuenum - (due date)
   - [ ] Task 2 - #issuenum - (due date)
   - [ ] Task 3 - #issuenum - (due date)
