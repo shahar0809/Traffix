@@ -62,17 +62,19 @@ class Detector:
     def detect_objects(self, frame):
         raise NotImplementedError
 
-    def put_bounding_box(self, index, frame):
+    def put_bounding_box(self, index, frame, dist):
         # extract the bounding box coordinates
         (x, y) = (self.boxes[index][0], self.boxes[index][1])
         (w, h) = (self.boxes[index][2], self.boxes[index][3])
 
         # Get the color of the label detected
-        color = [int(c) for c in self.COLORS[self.classIDs[index]]]
+        #color = [int(c) for c in self.COLORS[self.classIDs[index]]]
+        color = [0,0,255]
         # Create a rectangle according to the bounding box's coordinates
         cv2.rectangle(frame, (x, y), (x + w, y + h), color, 2)
         # Creating a text with the class of the prediction and its confidence
         text = "{}: {:.4f}".format(self.LABELS[self.classIDs[index]], self.confidences[index])
+        text += ", " + str(dist)
         # Putting the text to display
         cv2.putText(frame, text, (x, y - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
         return frame

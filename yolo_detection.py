@@ -116,8 +116,10 @@ class YoloDetector(detector.Detector):
         # If no objects were detected, return the original frame
         if len(boxes) == 0: return frame
 
+        '''
         for box_index in boxes.flatten():
             frame = self.put_bounding_box(box_index, frame)
+        '''
 
         print("FINISHED")
-        return frame
+        return boxes, frame
