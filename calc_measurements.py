@@ -1,3 +1,5 @@
+import math_classes as geo
+
 X = 0
 Y = 1
 
@@ -12,6 +14,23 @@ class VehicleMeasure:
         """
         self.camera = camera_details
         self.crosswalk = crosswalk_details
+
+        # Get the known width and length of the crosswalk
+        # width, length = self.crosswalk.width, self.crosswalk.length
+        width = 0.4
+        length = 1.5
+
+        # Converting the crosswalk into Point objects
+        point1 = geo.Point(self.crosswalk[0][X], self.crosswalk[0][Y])
+        point2 = geo.Point(self.crosswalk[1][X], self.crosswalk[1][Y])
+        point3 = geo.Point(self.crosswalk[2][X], self.crosswalk[2][Y])
+
+        # Get the pixels-to-meters ratio from know size
+        ratio_by_length = point1.distance(point2) / length
+        ratio_by_width = point2.distance(point3) / width
+
+        # Taking the average of the ratios (Assuming that the marking of the crosswalk isn't accurate)
+        self.pixels_ratio = ratio_by_length + ratio_by_width / 2
 
     def calc_distance(self, box):
         """

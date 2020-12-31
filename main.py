@@ -1,33 +1,34 @@
 import yolo_detection as yolo
 import capture_video as cap
 import cv2 as cv
-import calc_measurements as measure
+import kinematics_calculation as kinematics
 
 crosswalk = []
 image = None
+
 
 def capture_point(event, x, y, flags, param):
     global crosswalk, image
 
     if event == cv.EVENT_LBUTTONDOWN:
-        image = cv.circle(image, (x,y), radius=2, color=(255, 0, 0), thickness=-1)
+        image = cv.circle(image, (x, y), radius=3, color=(255, 0, 0), thickness=-2)
         crosswalk += [(x, y)]
 
 
-def get_crosswalk(image):
-    clone = image.copy()
-    cv.namedWindow("image")
-    cv.setMouseCallback("image", capture_point)
+def get_crosswalk(frame):
+    clone = frame.copy()
+    cv.namedWindow("Traffix")
+    cv.setMouseCallback("Traffix", capture_point)
 
-    # keep looping until the 'q' key is pressed
+    # Keep looping until the 'q' key is pressed
     while True:
-        # display the image and wait for a keypress
-        cv.imshow("image", image)
+        # Display the image and wait for a keypress
+        cv.imshow("Traffix", frame)
         key = cv.waitKey(1) & 0xFF
-        # if the 'r' key is pressed, reset the cropping region
+        # If the 'r' key is pressed, reset the cropping region
         if key == ord("r"):
-            image = clone.copy()
-        # if the 'c' key is pressed, break from the loop
+            frame = clone.copy()
+        # If the 'c' key is pressed, break from the loop
         elif key == ord("c"):
             break
 
@@ -50,7 +51,7 @@ def main():
     get_crosswalk(frame1)
     cv.destroyAllWindows()
     print(crosswalk)
-    m = measure.VehicleMeasure(None, crosswalk)
+    m = kinematics.KinematicsCalculation(None, crosswalk)
     boxes, frame = detector.detect_objects(frame1)
 
     for box_index in boxes.flatten():

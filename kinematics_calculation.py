@@ -6,14 +6,6 @@ class KinematicsCalculation(measurements.VehicleMeasure):
     """
     Calculates the measurements based on kinematics.
     """
-    def get_measurements(self, box1, box2, box3):
-        """
-        Returns the measurements of each vehicle detected (as the Vehicle class).
-        :return: Vehicle
-        """
-        d1 = self.calc_distance(box1)
-        d2 = self.calc_distance(box1)
-        d3 = self.calc_distance(box1)
 
     def calc_distance(self, box):
         """
@@ -28,7 +20,7 @@ class KinematicsCalculation(measurements.VehicleMeasure):
         print(x, y)
         point = geo.Point(x, y)
         # TODO: convert units from pixels to real distance
-        return point.dist_from_line(line)
+        return point.dist_from_line(line) / self.pixels_ratio
 
     def choose_crosswalk_line(self, box):
         """
