@@ -18,7 +18,7 @@ class Point:
     def distance(self, target):
         x_diff = target.x - self.x
         y_diff = target.y - self.y
-        dist = numpy.math.sqrt(x_diff ** 2 + y_diff ** 2)
+        dist = np.math.sqrt(x_diff ** 2 + y_diff ** 2)
         return dist
 
     def slope_from_origin(self):
