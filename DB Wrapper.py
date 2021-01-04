@@ -1,11 +1,15 @@
 import sqlite3
 import datetime as dt
 from abc import ABC
+import utils
 
-MAX_DAY = 7
+AMOUNT_OF_DAYS = 7
+AMOUNT_OF_HOURS = 24
 
+# TODO: Reformat code according to conventions
 
 class IDatabase:
+    # TODO: Add documentation about the classes and the code
     """
 
     """
@@ -33,7 +37,10 @@ class IDatabase:
     def get_traffic_data(self, day, hour):
         raise NotImplementedError
 
-    def set_traffic_per_week(self, loads_list):
+    def set_traffic_data(self, env_id, day, hour, data):
+        return NotImplementedError
+
+    def set_traffic_per_week(self, env_id, loads_list):
         raise NotImplementedError
 
 
@@ -117,16 +124,20 @@ class SqliteDatabase(IDatabase):
         :param camera_id: The id of the camera that we want to return
         :return: camera details
         """
-        #select camera details
+        # select camera details
         sql_select = "SELECT * FROM cameras WHERE ID = ?"
         cursor = self.conn.execute(sql_select, (camera_id,))
         record = cursor.fetchall()
 
+        if len(record) > 1:
+            raise Exception
+
+        fps = 0
         for row in record:
-            print("id = ", row[0])
-            print("focal_length = ", row[1])
-            print("optical_center_x = ", row[2])
-            print("optical_center_y  = ", row[3])
+            camera_id = row[0]
+            fps = row[1]
+
+        return utils.CameraDetails(camera_id, fps)
 
     def get_crosswalk_details(self, env_id):
         """
@@ -134,16 +145,22 @@ class SqliteDatabase(IDatabase):
         :param env_id: Will indicate a relevant environment
         :return: crosswalk details
         """
-        #select crosswalk details
+        # select crosswalk details
         sql_select = "SELECT Crosswalk_point_1, Crosswalk_point_2, Crosswalk_point_3, Crosswalk_point_4 FROM environments WHERE ID = ?"
         cursor = self.conn.execute(sql_select, (env_id,))
         record = cursor.fetchall()
 
+        if len(record) > 1:
+            raise Exception
+
+        crosswalk_details = None
         for row in record:
-            print("Crosswalk_point_1 = ", row[0])
-            print("Crosswalk_point_2 = ", row[1])
-            print("Crosswalk_point_3 = ", row[2])
-            print("Crosswalk_point_4  = ", row[3])
+            crosswalk_details = utils.CrosswalkDetails([row[0], row[1], row[2], row[3]],  # Points
+                                                       row[4],  # Width
+                                                       row[5],  # Length
+                                                       row[6])  # Crosswalk id
+
+        return crosswalk_details
 
     def get_environment(self, env_id):
         """
@@ -155,18 +172,13 @@ class SqliteDatabase(IDatabase):
         sql_select = """SELECT * FROM environments WHERE ID = ?"""
         cursor = self.conn.execute(sql_select, (env_id,))
         record = cursor.fetchall()
-
+        environment = None
         for row in record:
-            print("camera_id integer ", row[0])
-            print("crosswalk_point_1 = ", row[1])
-            print("Crosswalk_point_2 = ", row[2])
-            print("Crosswalk_point_3 = ", row[3])
-            print("Crosswalk_point_4  = ", row[4])
-            print("traffic_bar_low  = ", row[5])
-            print("traffic_bar_mid  = ", row[6])
-            print("traffic_bar_high  = ", row[7])
+            environment = utils.Environment(row[0], row[2], row[1])
 
-    def set_camera_details(self, focal_length, optical_center):
+        return environment
+
+    def set_camera_details(self, camera_id, fps):
         """
            insert to the table cameras details
            :param focal_length: The focal length that we want to update to.
@@ -189,7 +201,7 @@ class SqliteDatabase(IDatabase):
             cursor.close()
             return e
 
-    def set_crosswalk_details(self, crosswalk_point, env_id):
+    def set_crosswalk_details(self, crosswalk_points, crosswalk_id):
         """
         insert to the table cameras details
         :param crosswalk_point: A list of the information we want to update to.
@@ -201,14 +213,15 @@ class SqliteDatabase(IDatabase):
         sql_update = "UPDATE environments SET crosswalk_point_1 = ?, crosswalk_point_2 = ?, crosswalk_point_3 = ?, crosswalk_point_4 = ? WHERE env_id = ?"
 
         try:
-            cursor.execute(sql_update, (crosswalk_point[0], crosswalk_point[1], crosswalk_point[2], crosswalk_point[3], env_id))
+            cursor.execute(sql_update,
+                           (crosswalk_points[0], crosswalk_points[1], crosswalk_points[2], crosswalk_points[3], crosswalk_id))
             self.conn.commit()
             cursor.close()
-            return "The details inserts"
+            return True
 
         except sqlite3.Error as e:
             cursor.close()
-            return e
+            raise e
 
     def get_traffic_data(self, day, hour):
         """
@@ -224,6 +237,29 @@ class SqliteDatabase(IDatabase):
 
         return return_select
 
+    def set_traffic_data(self, env_id, day, hour, data):
+        """
+        insert to the table cameras details
+        :param data:
+        :param day:
+        :param hour:
+        :param env_id: The place where we want to update.
+        :return: true if the update works, false if doesn't.
+        """
+        cursor = self.conn.cursor()
+        # update traffic bar details
+        sql_update = "UPDATE loads SET priority = %d WHERE env_id = %d and day = %d and hour = %d"
+
+        try:
+            cursor.execute(sql_update, (data, env_id, day, hour))
+            self.conn.commit()
+            cursor.close()
+            return True
+
+        except sqlite3.Error as e:
+            cursor.close()
+            return e
+
     def set_traffic_bars(self, env_id, traffic_bar):
         """
         insert to the table cameras details
@@ -236,7 +272,7 @@ class SqliteDatabase(IDatabase):
         sql_update = "UPDATE environments SET traffic_bar_low = %d, traffic_bar_mid = %d, traffic_bar_high = %d WHERE env_id = %d"
 
         try:
-            cursor.execute(sql_update, (traffic_bar[0], traffic_bar[1], traffic_bar[2], env_id))
+            cursor.execute(sql_update, ([traffic_bar[0], traffic_bar[1], traffic_bar[2]], env_id))
             self.conn.commit()
             cursor.close()
             return True
@@ -244,6 +280,11 @@ class SqliteDatabase(IDatabase):
         except sqlite3.Error as e:
             cursor.close()
             return e
+
+    def set_traffic_per_week(self, env_id, traffic_data):
+        for day in range(AMOUNT_OF_DAYS):
+            for hour in range(AMOUNT_OF_HOURS):
+                self.set_traffic_data(env_id, day, hour, traffic_data[day][hour])
 
 
 def main():
