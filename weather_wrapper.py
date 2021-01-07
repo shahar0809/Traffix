@@ -7,6 +7,11 @@ LATITUDE = 0
 LONGITUDE = 1
 RESP = '{"coord":{"lon":34.7806,"lat":32.0809},"weather":[{"id":800,"main":"Clear","description":"clear sky","icon":"01d"}],"base":"stations","main":{"temp":23,"feels_like":21.74,"temp_min":21.11,"temp_max":24,"pressure":1018,"humidity":41},"visibility":10000,"wind":{"speed":1.5,"deg":0},"clouds":{"all":0},"dt":1610019026,"sys":{"type":1,"id":6845,"country":"IL","sunrise":1609994540,"sunset":1610031094},"timezone":7200,"id":293397,"name":"Tel Aviv","cod":200}'
 
+def get_current_utc_timestamp():
+    current_datetime = datetime.datetime.utcnow()
+    current_timetuple = current_datetime.utctimetuple()
+    current_timestamp = calendar.timegm(current_timetuple)
+    return current_timestamp
 
 class WeatherAPI:
     API_URL = "http://api.openweathermap.org/data/2.5/weather?"
@@ -62,6 +67,40 @@ class WeatherAPI:
         return self.data['sys']['sunset']
 
 
+class WeatherWrapper:
+    VEHICLE_EXTREME_WEATHER = ['Rain', 'Snow']
+    MIN_VISIBILITY = 4000
+    MIN_TEMP = 12
+    MAX_TEMP = 38
+
+    def __init__(self, weather):
+        self.weather = weather
+
+    def process_weather(self, forecast):
+        # If result is negative, the priority is for pedestrians. Positive - vehicles
+        temp = self.weather.get_temp()
+        wind = self.weather.get_wind()
+        sunset = self.weather.get_sunset()
+        sunrise = self.weather.get_sunrise()
+        extreme = self.weather.get_extreme()
+        desc = self.weather.get_weather_desc()
+
+        total_priority = 0
+
+        if temp > self.MAX_TEMP:
+            total_priority += -(self.MAX_TEMP - temp) / 10
+
+        if temp < self.MIN_TEMP:
+            total_priority += (self.MIN_TEMP - temp) / 10
+
+        current_time = get_current_utc_timestamp()
+        if sunset < current_time < sunrise:
+            total_priority += (current_time - sunset) / 5
+
+        if extreme in self.VEHICLE_EXTREME_WEATHER:
+            total_priority += 10
+
+        return total_priority
 
 
 if __name__ == '__main__':
