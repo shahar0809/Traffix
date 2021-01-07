@@ -8,6 +8,7 @@ AMOUNT_OF_HOURS = 24
 
 # TODO: Reformat code according to conventions
 
+
 class IDatabase:
     # TODO: Add documentation about the classes and the code
     """
@@ -62,9 +63,7 @@ class SqliteDatabase(IDatabase):
     def sql_table(self, db_file):
         sql_create_cameras_table = """CREATE TABLE IF NOT EXISTS cameras (
                                                 id integer PRIMARY KEY,
-                                                focal_length integer NOT NULL,
-                                                optical_center_x integer NOY NULL,
-                                                optical_center_y integer NOY NULL
+                                                fps integer NOT NULL
                                             );"""
 
         sql_create_environments_table = """ CREATE TABLE IF NOT EXISTS environments (
@@ -77,6 +76,8 @@ class SqliteDatabase(IDatabase):
                                                    traffic_bar_low integer NOT NULL,
                                                    traffic_bar_mid integer NOT NULL,
                                                    traffic_bar_high integer NOT NULL,
+                                                   width integer NOT NULL,
+                                                   length integer NOT NULL,
                                                    FOREIGN KEY (camera_id) REFERENCES cameras (id)
                                                ); """
 
@@ -178,23 +179,21 @@ class SqliteDatabase(IDatabase):
 
         return environment
 
-    def set_camera_details(self, camera_id, fps):
+    def add_camera_details(self, fps):
         """
            insert to the table cameras details
-           :param focal_length: The focal length that we want to update to.
-           :param  optical_center: A list of the information we want to update to.
+           :param fps:
            :return: true if the update works, false if doesn't.
            """
         cursor = self.conn.cursor()
         # insert camera details
-        sql_insert = "INSERT INTO cameras (focal_length, optical_center_x, optical_center_y)" \
-                     "VALUES (?, ?, ?)"
-        val = (focal_length, optical_center[0], optical_center[1])
+        sql_insert = "INSERT INTO cameras (fps)" \
+                     "VALUES (?)"
+
         try:
-            cursor.execute(sql_insert, val)
+            cursor.execute(sql_insert, (fps, ))
             self.conn.commit()
             cursor.close()
-            print("The details inserts")
             return True
 
         except sqlite3.Error as e:
@@ -286,23 +285,49 @@ class SqliteDatabase(IDatabase):
             for hour in range(AMOUNT_OF_HOURS):
                 self.set_traffic_data(env_id, day, hour, traffic_data[day][hour])
 
+    def add_environment(self, camera_id, crosswalk_points, bars, width, length):
+        cursor = self.conn.cursor()
+        # insert environment details
+        sql_insert = "INSERT INTO environments (camera_id, crosswalk_point_1, crosswalk_point_2, crosswalk_point_3, crosswalk_points_4, traffic_bar_low, traffic_bar_mid, traffic_bar_high, width, length)" \
+                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        val = (camera_id, crosswalk_points[0], crosswalk_points[1], crosswalk_points[2], crosswalk_points[3], bars[0], bars[1], bars[2], width, length)
+
+        try:
+            cursor.execute(sql_insert, val)
+            self.conn.commit()
+            cursor.close()
+            return True
+
+        except sqlite3.Error as e:
+            cursor.close()
+            return e
+
 
 def main():
-    database = r"C:/Users/משתמש/traffix/traffixDB.db"
+    database = r"traffixDB.db"
 
     sqlite_database = SqliteDatabase()
 
     sqlite_database.create_connection(database)
     sqlite_database.sql_table(database)
     try:
-        focal_length = int(input("Enter the focal_length you want to insert to the cameras table: "))
-        optical_center_x = int(input("Enter the optical_center_x you want to insert to the cameras table: "))
-        optical_center_y = int(input("Enter the optical_center_y you want to insert to the cameras table: "))
-        optical_center = [optical_center_x, optical_center_y]
-        sqlite_database.set_camera_details(focal_length, optical_center)
+        fps = int(input("Enter the focal_length you want to insert to the cameras table: "))
+        sqlite_database.add_camera_details(fps)
 
         camera_id = int(input("\nEnter the ID of the camera from which you want details: "))
-        sqlite_database.get_camera_details(camera_id)
+        camera = sqlite_database.get_camera_details(camera_id)
+        print(camera.get_id(), int(camera.get_fps()))
+        points = []
+        bars = []
+        camera_id = int(input("\nEnter the ID of the camera: "))
+        for i in range(4):
+            points += int(input("Enter the point you want to insert to the cameras table: "))
+        for i in range(3):
+            bars += int(input("Enter the bars %d you want to insert to the cameras table: "))
+        width = int(input("\nEnter the width of the crosswalk: "))
+        length = int(input("\nEnter the length of the crosswalk: "))
+
+        sqlite_database.add_environment(camera_id, points, bars, width, length)
 
         env_id = int(input("\nEnter the ID of the environment from which you want details: "))
         print(sqlite_database.get_environment(env_id))

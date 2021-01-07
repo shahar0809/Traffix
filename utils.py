@@ -21,7 +21,7 @@ class CameraDetails:
 
 
 class CrosswalkDetails:
-    def __init__(self, points, width, length, crosswalk_id=None):
+    def __init__(self, points, width, length):
         self.crosswalk_id = crosswalk_id
 
         self.points = []
@@ -44,10 +44,10 @@ class CrosswalkDetails:
 
 
 class Environment:
-    def __init__(self, env_id, crosswalk_id, camera_id, bars):
-        self.crosswalk_id = crosswalk_id
+    def __init__(self, env_id, camera_id, crosswalk, bars):
         self.camera_id = camera_id
         self.bars = bars
+        self.crosswalk = crosswalk
         self.environment_id = env_id
 
     def get_environment_id(self):
@@ -56,8 +56,8 @@ class Environment:
     def get_camera_id(self):
         return self.camera_id
 
-    def get_crosswalk_id(self):
-        return self.crosswalk_id
+    def set_crosswalk_details(crosswalk):
+        self.crosswalk = crosswalk
 
     def get_low_bar(self):
         return self.bars[LOW]
