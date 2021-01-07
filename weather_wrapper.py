@@ -62,11 +62,6 @@ class WeatherAPI:
         return self.data['sys']['sunset']
 
 
-class WeatherWrapper:
-    EXTREME_WEATHER = ['']
-
-    def process_weather(self, forecast):
-        pass
 
 
 if __name__ == '__main__':
