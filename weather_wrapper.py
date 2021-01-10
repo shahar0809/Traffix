@@ -30,8 +30,8 @@ class WeatherAPI:
         print(url)
 
         # Sending the request to the API
-        # response = requests.get(self.API_URL)
-        # print(response)
+        response = requests.get(url)
+        print(response)
         # Deserialization with JSON
         self.data = json.loads(RESP)
         return self.data
@@ -84,6 +84,7 @@ class WeatherWrapper:
         sunrise = self.weather.get_sunrise()
         extreme = self.weather.get_extreme()
         desc = self.weather.get_weather_desc()
+        # visibility,
 
         total_priority = 0
 
