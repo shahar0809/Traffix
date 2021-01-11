@@ -1,4 +1,5 @@
-import calc_measurements as calc
+import yolo_detection as yolo
+import kinematics_calculation as kinematics
 
 
 class Decision:
@@ -19,11 +20,28 @@ class DecisionMaker(Decision):
         Decision.__init__(self, vehicles, traffic_level, weather)
 
     def make_decision(self):
-        distance = calc.distance()
+
+        velocity = kinematics.calc_velocity(box1, box2, duration)
+        acceleration = kinematics.calc_acceleration(box1, box2, box3, duration)
+        distance = kinematics.calc_distance(box)
+
         if distance > 2:
+            if velocity/acceleration > 180:
+                print("Pedestrians stopped. Vehicles keep driving")
             print("Vehicles stopped. Pedestrians keep walking")
+
         elif distance < 2:
+            if velocity/acceleration < 180:
+                print("Vehicles stopped. Pedestrians keep walking")
             print("Pedestrians stopped. Vehicles keep driving")
 
     def make_decision_for_vehicle(self, vehicle):
-        pass
+        if vehicle.distance > 2:
+            if vehicle.velocity/vehicle.acceleration > 180:
+                print("Pedestrians stopped. Vehicles keep driving")
+            print("Vehicles stopped. Pedestrians keep walking")
+
+        elif vehicle.distance < 2:
+            if  vehicle.velocity/vehicle.acceleration < 180:
+                print("Vehicles stopped. Pedestrians keep walking")
+            print("Pedestrians stopped. Vehicles keep driving")

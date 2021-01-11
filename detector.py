@@ -2,6 +2,8 @@
 This module is responsible for detecting vehicles in specific frames.
 Using YOLO, we can detect cars, motorbikes, trucks, bicycles and buses.
 """
+from typing import List, Any
+
 import cv2
 
 
@@ -43,7 +45,6 @@ class Detector:
     LABELS = None
 
     # Results of predictions
-    boxes = []
     confidences = []
     classIDs = []
 
