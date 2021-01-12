@@ -1,6 +1,4 @@
 import sqlite3
-import datetime as dt
-from abc import ABC
 import utils
 
 AMOUNT_OF_DAYS = 7
@@ -26,9 +24,6 @@ class IDatabase:
     def get_environment(self, env_id):
         raise NotImplementedError
 
-    def set_camera_details(self, focal_length, optical_center):
-        raise NotImplementedError
-
     def set_crosswalk_details(self, crosswalk_point, env_id):
         raise NotImplementedError
 
@@ -42,6 +37,9 @@ class IDatabase:
         return NotImplementedError
 
     def set_traffic_per_week(self, env_id, loads_list):
+        raise NotImplementedError
+
+    def add_environment(self, camera_id, crosswalk_points, bars, width, length):
         raise NotImplementedError
 
 
@@ -62,32 +60,32 @@ class SqliteDatabase(IDatabase):
 
     def sql_table(self, db_file):
         sql_create_cameras_table = """CREATE TABLE IF NOT EXISTS cameras (
-                                                id integer PRIMARY KEY,
-                                                fps integer NOT NULL
-                                            );"""
+                                            id integer PRIMARY KEY,
+                                            fps integer NOT NULL
+                                        );"""
 
         sql_create_environments_table = """ CREATE TABLE IF NOT EXISTS environments (
-                                                   id integer PRIMARY KEY,
-                                                   camera_id integer NOT NULL,
-                                                   crosswalk_point_1 point NOT NULL,
-                                                   crosswalk_point_2 point NOT NULL,
-                                                   crosswalk_point_3 point NOT NULL,
-                                                   crosswalk_point_4 point NOT NULL,
-                                                   traffic_bar_low integer NOT NULL,
-                                                   traffic_bar_mid integer NOT NULL,
-                                                   traffic_bar_high integer NOT NULL,
-                                                   width integer NOT NULL,
-                                                   length integer NOT NULL,
-                                                   FOREIGN KEY (camera_id) REFERENCES cameras (id)
+                                                    id integer PRIMARY KEY,
+                                                    camera_id integer NOT NULL,
+                                                    crosswalk_point_1 point NOT NULL,
+                                                    crosswalk_point_2 point NOT NULL,
+                                                    crosswalk_point_3 point NOT NULL,
+                                                    crosswalk_point_4 point NOT NULL,
+                                                    traffic_bar_low integer NOT NULL,
+                                                    traffic_bar_mid integer NOT NULL,
+                                                    traffic_bar_high integer NOT NULL,
+                                                    width integer NOT NULL,
+                                                    length integer NOT NULL,
+                                                    FOREIGN KEY (camera_id) REFERENCES cameras (id)
                                                ); """
 
         sql_create_loads_table = """ CREATE TABLE IF NOT EXISTS loads (
-                                                       env_id integer PRIMARY KEY,
-                                                       priority ENUM NOT NULL,
-                                                       hour integer NOT NULL,
-                                                       day integer NOT NULL,
-                                                       FOREIGN KEY (env_id) REFERENCES environments (id)
-                                                   ); """
+                                                    env_id integer PRIMARY KEY,
+                                                    level integer NOT NULL,
+                                                    hour integer NOT NULL,
+                                                    day integer NOT NULL,
+                                                    FOREIGN KEY (env_id) REFERENCES environments (id)
+                                               ); """
 
         # create a database connection
         self.conn = self.create_connection(db_file)
@@ -109,7 +107,6 @@ class SqliteDatabase(IDatabase):
     def create_table(self, create_table_sql):
         """
         create a table from the create_table_sql statement
-        :param conn: Connection object
         :param create_table_sql: a CREATE TABLE statement
         :return:
         """
@@ -147,21 +144,17 @@ class SqliteDatabase(IDatabase):
         :return: crosswalk details
         """
         # select crosswalk details
-        sql_select = "SELECT Crosswalk_point_1, Crosswalk_point_2, Crosswalk_point_3, Crosswalk_point_4 FROM environments WHERE ID = ?"
+        sql_select = "SELECT Crosswalk_point_1, Crosswalk_point_2, Crosswalk_point_3, Crosswalk_point_4, width, length FROM environments WHERE ID = ?"
         cursor = self.conn.execute(sql_select, (env_id,))
         record = cursor.fetchall()
-
-        if len(record) > 1:
-            raise Exception
-
-        crosswalk_details = None
         for row in record:
-            crosswalk_details = utils.CrosswalkDetails([row[0], row[1], row[2], row[3]],  # Points
-                                                       row[4],  # Width
-                                                       row[5],  # Length
-                                                       row[6])  # Crosswalk id
+            crosswalk_points = [row[0], row[1], row[2], row[3]]
+            width = row[4]
+            length = row[5]
+            #utils.CrosswalkDetails(crosswalk_points, width, length)
 
-        return crosswalk_details
+            crosswalk_details = [crosswalk_points, width, length]
+            return crosswalk_details
 
     def get_environment(self, env_id):
         """
@@ -173,11 +166,17 @@ class SqliteDatabase(IDatabase):
         sql_select = """SELECT * FROM environments WHERE ID = ?"""
         cursor = self.conn.execute(sql_select, (env_id,))
         record = cursor.fetchall()
-        environment = None
         for row in record:
-            environment = utils.Environment(row[0], row[2], row[1])
+            env_id = row[0]
+            camera_id = row[1]
+            crosswalk_points = [row[2], row[3], row[4], row[5]]
+            bars = [row[6], row[7], row[8]]
+            width = row[9]
+            length = row[10]
+            utils.Environment(env_id, camera_id, crosswalk_points, bars, width, length)
 
-        return environment
+            environment_details = [env_id, camera_id, crosswalk_points, bars, width, length]
+            return environment_details
 
     def add_camera_details(self, fps):
         """
@@ -203,8 +202,8 @@ class SqliteDatabase(IDatabase):
     def set_crosswalk_details(self, crosswalk_points, crosswalk_id):
         """
         insert to the table cameras details
-        :param crosswalk_point: A list of the information we want to update to.
-        :param env_id: The place where we want to update.
+        :param crosswalk_points: A list of the information we want to update to.
+        :param crosswalk_id: The place where we want to update.
         :return: true if the update works, false if doesn't.
         """
         cursor = self.conn.cursor()
@@ -212,8 +211,7 @@ class SqliteDatabase(IDatabase):
         sql_update = "UPDATE environments SET crosswalk_point_1 = ?, crosswalk_point_2 = ?, crosswalk_point_3 = ?, crosswalk_point_4 = ? WHERE env_id = ?"
 
         try:
-            cursor.execute(sql_update,
-                           (crosswalk_points[0], crosswalk_points[1], crosswalk_points[2], crosswalk_points[3], crosswalk_id))
+            cursor.execute(sql_update, (crosswalk_points[0], crosswalk_points[1], crosswalk_points[2], crosswalk_points[3], crosswalk_id))
             self.conn.commit()
             cursor.close()
             return True
@@ -247,7 +245,7 @@ class SqliteDatabase(IDatabase):
         """
         cursor = self.conn.cursor()
         # update traffic bar details
-        sql_update = "UPDATE loads SET priority = %d WHERE env_id = %d and day = %d and hour = %d"
+        sql_update = "UPDATE loads SET level = ? WHERE env_id = ? and day = ? and hour = ?"
 
         try:
             cursor.execute(sql_update, (data, env_id, day, hour))
@@ -268,10 +266,10 @@ class SqliteDatabase(IDatabase):
         """
         cursor = self.conn.cursor()
         # update traffic bar details
-        sql_update = "UPDATE environments SET traffic_bar_low = %d, traffic_bar_mid = %d, traffic_bar_high = %d WHERE env_id = %d"
-
+        sql_update = "UPDATE environments SET traffic_bar_low = ?, traffic_bar_mid = ?, traffic_bar_high = ? WHERE id = ?"
+        val = (traffic_bar[0], traffic_bar[1], traffic_bar[2], env_id)
         try:
-            cursor.execute(sql_update, ([traffic_bar[0], traffic_bar[1], traffic_bar[2]], env_id))
+            cursor.execute(sql_update, val)
             self.conn.commit()
             cursor.close()
             return True
@@ -288,10 +286,8 @@ class SqliteDatabase(IDatabase):
     def add_environment(self, camera_id, crosswalk_points, bars, width, length):
         cursor = self.conn.cursor()
         # insert environment details
-        sql_insert = "INSERT INTO environments (camera_id, crosswalk_point_1, crosswalk_point_2, crosswalk_point_3, crosswalk_points_4, traffic_bar_low, traffic_bar_mid, traffic_bar_high, width, length)" \
-                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        sql_insert = '''INSERT INTO environments (camera_id, crosswalk_point_1, crosswalk_point_2, crosswalk_point_3, crosswalk_point_4, traffic_bar_low, traffic_bar_mid, traffic_bar_high, width, length) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
         val = (camera_id, crosswalk_points[0], crosswalk_points[1], crosswalk_points[2], crosswalk_points[3], bars[0], bars[1], bars[2], width, length)
-
         try:
             cursor.execute(sql_insert, val)
             self.conn.commit()
@@ -311,29 +307,7 @@ def main():
     sqlite_database.create_connection(database)
     sqlite_database.sql_table(database)
     try:
-        fps = int(input("Enter the focal_length you want to insert to the cameras table: "))
-        sqlite_database.add_camera_details(fps)
-
-        camera_id = int(input("\nEnter the ID of the camera from which you want details: "))
-        camera = sqlite_database.get_camera_details(camera_id)
-        print(camera.get_id(), int(camera.get_fps()))
-        points = []
-        bars = []
-        camera_id = int(input("\nEnter the ID of the camera: "))
-        for i in range(4):
-            points += int(input("Enter the point you want to insert to the cameras table: "))
-        for i in range(3):
-            bars += int(input("Enter the bars %d you want to insert to the cameras table: "))
-        width = int(input("\nEnter the width of the crosswalk: "))
-        length = int(input("\nEnter the length of the crosswalk: "))
-
-        sqlite_database.add_environment(camera_id, points, bars, width, length)
-
-        env_id = int(input("\nEnter the ID of the environment from which you want details: "))
-        print(sqlite_database.get_environment(env_id))
-
-        env_id = int(input("\nEnter the ID of the environment from which you want the crosswalk details: "))
-        print(sqlite_database.get_crosswalk_details(env_id))
+        sqlite_database.set_traffic_data(1, 5, 2, 7)
 
     except Exception as e:
         print(e)
