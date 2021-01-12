@@ -1,6 +1,6 @@
 import requests
 import json
-from datetime import datetime
+import datetime
 import calendar
 
 LATITUDE = 0
@@ -46,7 +46,7 @@ class WeatherAPI:
         return float(self.get_main_attribute('humidity'))
 
     def get_visibility(self):
-        return float(self.get_main_attribute('visibility'))
+        return float(self.data['visibility'])
 
     def get_wind_speed(self):
         return float(self.data['wind']['speed'])
@@ -69,37 +69,51 @@ class WeatherAPI:
 
 class WeatherWrapper:
     VEHICLE_EXTREME_WEATHER = ['Rain', 'Snow']
+    WEATHER_DESCRIPTIONS = ['light snow', 'mist', '']
     MIN_VISIBILITY = 4000
     MIN_TEMP = 12
     MAX_TEMP = 38
+    MIN_VISIBILITY = 10000
+    EXTREME_MIN_TEMP = -5
+    MAX_WIND_SPEED = 3
 
     def __init__(self, weather):
         self.weather = weather
 
-    def process_weather(self, forecast):
+    def process_weather(self):
+        self.weather.make_request()
         # If result is negative, the priority is for pedestrians. Positive - vehicles
         temp = self.weather.get_temp()
-        wind = self.weather.get_wind()
+        wind = self.weather.get_wind_speed()
         sunset = self.weather.get_sunset()
         sunrise = self.weather.get_sunrise()
-        extreme = self.weather.get_extreme()
-        desc = self.weather.get_weather_desc()
-        # visibility,
+        extreme = self.weather.get_extreme_weather()
+        visibility = self.weather.get_visibility()
 
         total_priority = 0
 
         if temp > self.MAX_TEMP:
-            total_priority += -(self.MAX_TEMP - temp) / 10
+            total_priority += -(self.MAX_TEMP - temp) / 20
 
         if temp < self.MIN_TEMP:
-            total_priority += (self.MIN_TEMP - temp) / 10
+            total_priority += (self.MIN_TEMP - temp) / 20
+
+        if temp < self.EXTREME_MIN_TEMP:
+            total_priority += self.EXTREME_MIN_TEMP - temp
 
         current_time = get_current_utc_timestamp()
-        if sunset < current_time < sunrise:
-            total_priority += (current_time - sunset) / 5
+        if sunset < current_time:
+            # Dividing by a big number because of the UTC format
+            total_priority += -(current_time - sunset) / (3 * 10**(len(str(sunset)) / 2 - 1))
 
         if extreme in self.VEHICLE_EXTREME_WEATHER:
             total_priority += 10
+
+        if visibility < self.MIN_VISIBILITY:
+            total_priority += (self.MIN_VISIBILITY - visibility)
+
+        if wind > self.MAX_WIND_SPEED:
+            total_priority += (self.MAX_WIND_SPEED - wind) / 10
 
         return total_priority
 
@@ -110,3 +124,5 @@ if __name__ == '__main__':
     print(w.make_request())
     print(w.get_weather_desc())
     print(w.get_sunset())
+    wr = WeatherWrapper(w)
+    print(wr.process_weather())
