@@ -1,14 +1,9 @@
-import yolo_detection as yolo
 import kinematics_calculation as kinematics
+import cmath
 
 
 class Decision:
-    def __init__(self, vehicles, traffic_level, weather):
-        self.vehicles = vehicles
-        self.traffic_level = traffic_level
-        self.weather = weather
-
-    def make_decision(self):
+    def make_decision(self, box, box1, box2, box3, duration):
         raise NotImplementedError
 
     def make_decision_for_vehicle(self, vehicle):
@@ -17,31 +12,69 @@ class Decision:
 
 class DecisionMaker(Decision):
     def __init__(self, vehicles, traffic_level, weather):
-        Decision.__init__(self, vehicles, traffic_level, weather)
+        self.vehicles = vehicles
+        self.traffic_level = traffic_level
+        self.weather = weather
 
-    def make_decision(self):
+    def make_decision(self, box, box1, box2, box3, duration, m):
 
-        velocity = kinematics.calc_velocity(box1, box2, duration)
-        acceleration = kinematics.calc_acceleration(box1, box2, box3, duration)
-        distance = kinematics.calc_distance(box)
+        velocity = m.calc_velocity(box1, box2, duration)
+        acceleration = m.calc_acceleration(box1, box2, box3, duration)
+        distance = m.calc_distance(box)
 
-        if distance > 2:
-            if velocity/acceleration > 180:
-                print("Pedestrians stopped. Vehicles keep driving")
-            print("Vehicles stopped. Pedestrians keep walking")
+        a = acceleration / 2
+        b = velocity
+        c = distance
 
-        elif distance < 2:
-            if velocity/acceleration < 180:
-                print("Vehicles stopped. Pedestrians keep walking")
-            print("Pedestrians stopped. Vehicles keep driving")
+        # calculate the discriminant
+        calc_dis = (b ** 2) - (4 * a * c)
+
+        if calc_dis < 0 or a == 0:
+            print("Impossivel calcular")
+
+        else:
+            d = cmath.sqrt(calc_dis)
+            x1 = (-b + d) / (2 * a)
+            x2 = (-b - d) / (2 * a)
+            if x1.real < float(180) or x2.real < float(180):
+                return "Vehicles stopped. Pedestrians keep walking"
+
+            else:
+                return "Pedestrians stopped. Vehicles keep driving"
 
     def make_decision_for_vehicle(self, vehicle):
-        if vehicle.distance > 2:
-            if vehicle.velocity/vehicle.acceleration > 180:
-                print("Pedestrians stopped. Vehicles keep driving")
-            print("Vehicles stopped. Pedestrians keep walking")
+        a = vehicle.acceleration / 2
+        b = vehicle.velocity
+        c = vehicle.distance
 
-        elif vehicle.distance < 2:
-            if  vehicle.velocity/vehicle.acceleration < 180:
-                print("Vehicles stopped. Pedestrians keep walking")
-            print("Pedestrians stopped. Vehicles keep driving")
+        # calculate the discriminant
+        calc_dis = (b ** 2) - (4 * a * c)
+
+        if calc_dis < 0 or a == 0:
+            print("Impossivel calcular")
+
+        else:
+            d = cmath.sqrt(calc_dis)
+            x1 = (-b + d) / (2 * a)
+            x2 = (-b - d) / (2 * a)
+            if x1.real < float(180) or x2.real < float(180):
+                return "Vehicles stopped. Pedestrians keep walking"
+
+            else:
+                return "Pedestrians stopped. Vehicles keep driving"
+
+
+def main():
+    decision_maker = DecisionMaker()
+    m = kinematics.KinematicsCalculation(None, [(2, 60), (60, 60), (80, 2), (1, 80)])
+    box = [(1, 60), (60, 60), (80, 2), (1, 80)]
+    box1 = [(1, 60), (60, 60), (80, 2), (1, 80)]
+    box2 = [(1, 60), (80, 60), (1, 1), (1, 80)]
+    box3 = [(1, 60), (80, 60), (1, 1), (1, 80)]
+    duration = 1 / 0.2456
+
+    decision_maker.make_decision(box, box1, box2, box3, duration, m)
+
+
+if __name__ == '__main__':
+    main()
