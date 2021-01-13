@@ -14,18 +14,13 @@ Previous meeting summary can be found under  #issuenum.
 - #issuenum 2
 - #issuenum 3
 
-### Meeting Content
-<!-- Use this space to in order to keep track of notewrthy events in your past week, either planned or unexpected. -->
-
 ### Todo
-<!-- Include here all tasks, new and unfinished (but with new deadlines). -->
+<!-- New Tasks that were added from the mentor. -->
 - TeamMember1 
   - [ ] Task 1 - #issuenum - (due date)
   - [ ] Task 2 - #issuenum - (due date)
-  - [ ] Task 3 - #issuenum - (due date)
 - TeamMember2 
   - [ ] Task 1 - #issuenum - (due date)
   - [ ] Task 2 - #issuenum - (due date)
-  - [ ] Task 3 - #issuenum - (due date)
 
  ### Notes
