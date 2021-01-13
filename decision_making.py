@@ -3,7 +3,8 @@ import cmath
 
 
 class Decision:
-    def make_decision(self, box, box1, box2, box3, duration):
+
+    def make_decision(self, box, box1, box2, box3, duration, m):
         raise NotImplementedError
 
     def make_decision_for_vehicle(self, vehicle):
@@ -30,7 +31,7 @@ class DecisionMaker(Decision):
         calc_dis = (b ** 2) - (4 * a * c)
 
         if calc_dis < 0 or a == 0:
-            print("Impossivel calcular")
+            return "Impossible calculator"
 
         else:
             d = cmath.sqrt(calc_dis)
@@ -51,7 +52,7 @@ class DecisionMaker(Decision):
         calc_dis = (b ** 2) - (4 * a * c)
 
         if calc_dis < 0 or a == 0:
-            print("Impossivel calcular")
+            return "Impossible calculator"
 
         else:
             d = cmath.sqrt(calc_dis)
