@@ -2,7 +2,6 @@ import yolo_detection as yolo
 import capture_video as cap
 import cv2 as cv
 import kinematics_calculation as kinematics
-
 crosswalk = []
 image = None
 

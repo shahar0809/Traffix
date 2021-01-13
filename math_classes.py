@@ -35,7 +35,7 @@ class Point:
             return m
 
     def dist_from_line(self, line):
-        res1 = abs(line.get_slope() * self.x -1 * self.get_y() + line.get_bias())
+        res1 = abs(line.get_slope() * self.x - 1 * self.get_y() + line.get_bias())
         return res1 / np.math.sqrt(line.get_slope() ** 2 + 1)
 
 
