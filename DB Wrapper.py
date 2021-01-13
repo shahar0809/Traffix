@@ -42,6 +42,9 @@ class IDatabase:
     def add_environment(self, camera_id, crosswalk_points, bars, width, length):
         raise NotImplementedError
 
+    def get_load_details(self, env_id):
+        raise NotImplementedError
+
 
 class SqliteDatabase(IDatabase):
     def create_connection(self, db_file):
@@ -82,8 +85,8 @@ class SqliteDatabase(IDatabase):
         sql_create_loads_table = """ CREATE TABLE IF NOT EXISTS loads (
                                                     env_id integer PRIMARY KEY,
                                                     level integer NOT NULL,
-                                                    hour integer NOT NULL,
                                                     day integer NOT NULL,
+                                                    hour integer NOT NULL,
                                                     FOREIGN KEY (env_id) REFERENCES environments (id)
                                                ); """
 
@@ -228,11 +231,11 @@ class SqliteDatabase(IDatabase):
         :return: crosswalk details
         """
         # select crosswalk details
-        sql_select = "SELECT level FROM loads WHERE day = %d AND hour = %d"
+        sql_select = "SELECT level FROM loads WHERE day = ? AND hour = ?"
         cursor = self.conn.execute(sql_select, (day, hour))
-        return_select = cursor.fetchone()
+        return_select = cursor.fetchall()
 
-        return return_select
+        return return_select[0][0]
 
     def set_traffic_data(self, env_id, day, hour, data):
         """
@@ -298,6 +301,25 @@ class SqliteDatabase(IDatabase):
             cursor.close()
             return e
 
+    def get_load_details(self, env_id):
+        """
+            return load details
+            :param env_id: The id of the environments that we want to return from.
+            :return: load details
+            """
+        # select environments details
+        sql_select = """SELECT * FROM loads WHERE env_id = ?"""
+        cursor = self.conn.execute(sql_select, (env_id,))
+        record = cursor.fetchall()
+        for row in record:
+            env_id = row[0]
+            level = row[1]
+            day = row[2]
+            hour = row[3]
+
+            load_details = [env_id, level, day, hour]
+            return load_details
+
 
 def main():
     database = r"traffixDB.db"
@@ -307,7 +329,8 @@ def main():
     sqlite_database.create_connection(database)
     sqlite_database.sql_table(database)
     try:
-        sqlite_database.set_traffic_data(1, 5, 2, 7)
+        g = sqlite_database.get_load_details(1)
+        print(g)
 
     except Exception as e:
         print(e)
