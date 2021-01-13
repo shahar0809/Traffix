@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
 <<<<<<< HEAD
+<<<<<<< HEAD
   <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.8 (פרוייקט)" project-jdk-type="Python SDK" />
 =======
   <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.8 (traffix) (3)" project-jdk-type="Python SDK" />
 >>>>>>> 2629f00a7e5eac486ae98a338cfae48540aa60d1
+=======
+  <component name="ProjectRootManager" version="2" project-jdk-name="Python 3.8 (פרוייקט)" project-jdk-type="Python SDK" />
+>>>>>>> database
 </project>
