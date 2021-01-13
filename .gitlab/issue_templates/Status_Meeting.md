@@ -1,8 +1,4 @@
-<!--
-* Use this issue template to summarize Status Meetings.
-* Make sure to replace all the relevant references of names and issue numbers. -->
-
-# Weekly Status 704 num - Meeting num
+# Weekly Status 704 - Meeting num
 <!-- Meeting metadata. Replace once and update the template. -->
 Previous status-meeting summary can be found under  #issuenum.
 <br>
@@ -15,7 +11,7 @@ Previous status-meeting summary can be found under  #issuenum.
 - #issuenum 2
 - #issuenum 3
 ### Weekly Summary
-<!-- Use this space to in order to keep track of notewrthy events in your past week, either planned or unexpected. -->
+<!-- Use this space to in order to keep track of note-worthy events in your past week, either planned or unexpected. -->
 ### Mentor Update
 <!-- Short description of this week's dialog with your mentor. -->
 
