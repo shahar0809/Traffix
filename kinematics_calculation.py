@@ -44,7 +44,6 @@ class KinematicsCalculation(measurements.VehicleMeasure):
         # Getting the maximal and minimal values of the crosswalk
         crosswalk_max_x = max(self.crosswalk, key=lambda item: item[1])[0]
         crosswalk_min_x = min(self.crosswalk, key=lambda item: item[1])[0]
-
         '''
         Choosing the closest line based on the locations of the box and the crosswalk
         '''
@@ -58,7 +57,7 @@ class KinematicsCalculation(measurements.VehicleMeasure):
         elif crosswalk_min_x < x < crosswalk_max_x:
             return None, None
         # The objects intersect, so that a part of the box is within the crosswalk
-        elif x < crosswalk_min_x < x + width < crosswalk_max_x:
+        elif x < crosswalk_min_x < x + width< crosswalk_max_x:
             print("CHOSE LINE 1")
             return None, None
 
@@ -90,5 +89,5 @@ class KinematicsCalculation(measurements.VehicleMeasure):
         return dist_diff / (1 / self.camera_details.fps)
 
     def calc_acceleration(self, box1, box2, box3, duration):
-        velocity_diff = self.calc_velocity(box2, box3) - self.calc_velocity(box1, box2)
+        velocity_diff = self.calc_velocity(box2, box3, duration) - self.calc_velocity(box1, box2, duration)
         return velocity_diff / (1 / self.fps)
