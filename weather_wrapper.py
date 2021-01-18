@@ -7,11 +7,13 @@ LATITUDE = 0
 LONGITUDE = 1
 RESP = '{"coord":{"lon":34.7806,"lat":32.0809},"weather":[{"id":800,"main":"Clear","description":"clear sky","icon":"01d"}],"base":"stations","main":{"temp":23,"feels_like":21.74,"temp_min":21.11,"temp_max":24,"pressure":1018,"humidity":41},"visibility":10000,"wind":{"speed":1.5,"deg":0},"clouds":{"all":0},"dt":1610019026,"sys":{"type":1,"id":6845,"country":"IL","sunrise":1609994540,"sunset":1610031094},"timezone":7200,"id":293397,"name":"Tel Aviv","cod":200}'
 
+
 def get_current_utc_timestamp():
     current_datetime = datetime.datetime.utcnow()
     current_timetuple = current_datetime.utctimetuple()
     current_timestamp = calendar.timegm(current_timetuple)
     return current_timestamp
+
 
 class WeatherAPI:
     API_URL = "http://api.openweathermap.org/data/2.5/weather?"
