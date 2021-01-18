@@ -1,5 +1,5 @@
 import cv2
-
+import logic
 
 class Capture:
     """
@@ -14,7 +14,6 @@ class Capture:
 
     GROUP_SIZE = 3
     TIME_GAP = 30
-    _frames = [[]]
     _iteration = 0
     _curr_frames = []
 
@@ -55,17 +54,8 @@ class Capture:
         if len(self._curr_frames) < self.GROUP_SIZE:
             self._curr_frames += frame
 
-        # If the list is empty, create a new group containing the frame
-        if len(self._frames) == 0: self._frames.append([frame])
-
-        # Fetching the last group of frames in the list
-        last = self._frames[-1]
-
-        # If the last group of frames isn't full, then append the frame to the group
-        if len(last) < self.GROUP_SIZE: last.append(frame)
-
-        # If the last group of frames is full, create a new group containing the frame
-        else: self._frames.append([frame])
+        if len(self._curr_frames) == self.GROUP_SIZE:
+            logic.queue.append(self._curr_frames)
 
     def get_frames(self):
         """
@@ -75,11 +65,11 @@ class Capture:
         """
 
         # If the list is empty, or the current group is too small, there are not enough frames.
-        if len(self._frames) == 0 or len(self._frames[0]) < self.GROUP_SIZE:
+        if logic.queue.size() == 0:
             raise Exception("Not enough frames!")
         # Otherwise, return the first group in the list.
         else:
-            return self._frames.pop(0)
+            return logic.queue.pop()
 
     def handle_keys(self):
         """
