@@ -1,10 +1,11 @@
-# Import necessary libraries and modules
+# Import necessary libraries
 import cv2 as cv
 import queue
 import threading
-import yolo_detection as yolo
+# Modules
+import vehicles_detection.yolo_detection as yolo
 import capture_video as cap
-import kinematics_calculation as kinematics
+import measurements_calculations.kinematics_calculation as kinematics
 import utils
 
 queue = queue.Queue()

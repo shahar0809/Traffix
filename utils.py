@@ -1,9 +1,15 @@
-import math_classes as geo
+import measurements_calculations.math_classes as geo
 import cv2 as cv
 
-LOW = 0
-MED = 1
-HIGH = 2
+# Indices
+LOW_BAR = 0
+MEDIUM_BAR = 1
+HIGH_BAR = 2
+
+# Values
+LOW_LEVEL = 0
+MEDIUM_LEVEL = 1
+HIGH_LEVEL = 2
 
 
 class CameraDetails:
@@ -62,22 +68,22 @@ class Environment:
         self.crosswalk_points = crosswalk_points
 
     def get_low_bar(self):
-        return self.bars[LOW]
+        return self.bars[LOW_BAR]
 
     def get_med_bar(self):
-        return self.bars[MED]
+        return self.bars[MEDIUM_BAR]
 
     def get_high_bar(self):
-        return self.bars[HIGH]
+        return self.bars[HIGH_BAR]
 
     def set_low_bar(self, bar):
-        self.bars[LOW] = bar
+        self.bars[LOW_BAR] = bar
 
     def set_med_bar(self, bar):
-        self.bars[MED] = bar
+        self.bars[MEDIUM_BAR] = bar
 
     def set_high_bar(self, bar):
-        self.bars[HIGH] = bar
+        self.bars[HIGH_BAR] = bar
 
     def get_width(self):
         return self.width
