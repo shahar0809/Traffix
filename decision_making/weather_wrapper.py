@@ -72,7 +72,7 @@ class WeatherAPI:
 class WeatherWrapper:
     VEHICLE_EXTREME_WEATHER = ['Rain', 'Snow']
     WEATHER_DESCRIPTIONS = ['light snow', 'mist', '']
-    MIN_VISIBILITY = 4000
+
     MIN_TEMP = 12
     MAX_TEMP = 38
     MIN_VISIBILITY = 10000

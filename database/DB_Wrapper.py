@@ -12,8 +12,14 @@ class IDatabase:
     """
 
     """
-    hours = [i for i in range(1, 25)]
-    conn = None
+    db_file = 'traffixDB.db'
+
+    def __init__(self, file=None):
+        if file is not None:
+            self.db_file = file
+
+        self.hours = [i for i in range(1, 25)]
+        self.conn = None
 
     def get_camera_details(self, camera_id):
         raise NotImplementedError
@@ -30,6 +36,9 @@ class IDatabase:
     def set_traffic_bars(self, env_id, traffic_bar):
         raise NotImplementedError
 
+    def get_traffic_bars(self, env_id):
+        raise NotImplementedError
+
     def get_traffic_data(self, day, hour):
         raise NotImplementedError
 
@@ -44,21 +53,25 @@ class IDatabase:
 
 
 class SqliteDatabase(IDatabase):
-    def create_connection(self, db_file):
+    def __init__(self, file=None):
+        super(SqliteDatabase, self).__init__(file)
+        self.create_connection()
+        self.sql_table()
+
+    def create_connection(self):
         """
         create a database connection to the SQLite database specified by db_file
-        :param db_file: database file
         :return: Connection object or None
         """
         try:
-            self.conn = sqlite3.connect(db_file)
+            self.conn = sqlite3.connect(self.db_file)
             return self.conn
         except sqlite3.Error as e:
             print(e)
 
         return self.conn
 
-    def sql_table(self, db_file):
+    def sql_table(self):
         sql_create_cameras_table = """CREATE TABLE IF NOT EXISTS cameras (
                                             id integer PRIMARY KEY,
                                             fps integer NOT NULL
@@ -88,7 +101,7 @@ class SqliteDatabase(IDatabase):
                                                ); """
 
         # create a database connection
-        self.conn = self.create_connection(db_file)
+        self.conn = self.create_connection()
 
         # create tables
         if self.conn is not None:
@@ -278,6 +291,7 @@ class SqliteDatabase(IDatabase):
             cursor.close()
             return e
 
+    # TODO: ADD GET_TRAFFIC_BARS
     def set_traffic_per_week(self, env_id, traffic_data):
         for day in range(AMOUNT_OF_DAYS):
             for hour in range(AMOUNT_OF_HOURS):
@@ -304,8 +318,6 @@ def main():
 
     sqlite_database = SqliteDatabase()
 
-    sqlite_database.create_connection(database)
-    sqlite_database.sql_table(database)
     try:
         sqlite_database.set_traffic_data(1, 5, 2, 7)
 

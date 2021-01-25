@@ -1,8 +1,15 @@
-import math_classes as geo
+import measurements_calculations.math_classes as geo
+import cv2 as cv
 
-LOW = 0
-MED = 1
-HIGH = 2
+# Indices
+LOW_BAR = 0
+MEDIUM_BAR = 1
+HIGH_BAR = 2
+
+# Values
+LOW_LEVEL = 0
+MEDIUM_LEVEL = 1
+HIGH_LEVEL = 2
 
 
 class CameraDetails:
@@ -61,25 +68,72 @@ class Environment:
         self.crosswalk_points = crosswalk_points
 
     def get_low_bar(self):
-        return self.bars[LOW]
+        return self.bars[LOW_BAR]
 
     def get_med_bar(self):
-        return self.bars[MED]
+        return self.bars[MEDIUM_BAR]
 
     def get_high_bar(self):
-        return self.bars[HIGH]
+        return self.bars[HIGH_BAR]
 
     def set_low_bar(self, bar):
-        self.bars[LOW] = bar
+        self.bars[LOW_BAR] = bar
 
     def set_med_bar(self, bar):
-        self.bars[MED] = bar
+        self.bars[MEDIUM_BAR] = bar
 
     def set_high_bar(self, bar):
-        self.bars[HIGH] = bar
+        self.bars[HIGH_BAR] = bar
 
     def get_width(self):
         return self.width
 
     def get_length(self):
         return self.length
+
+
+def capture_mouse_click(event, x, y, flags, param):
+    """
+    crosswalk, image
+
+    if event == cv.EVENT_LBUTTONDOWN:
+        image = cv.circle(image, (x, y), radius=3, color=(255, 0, 0), thickness=-2)
+        crosswalk += [(x, y)]
+    """
+
+
+def get_crosswalk(frame):
+    """
+    clone = frame.copy()
+    cv.namedWindow("Traffix")
+    cv.setMouseCallback("Traffix", capture_point)
+
+    # Keep looping until the 'q' key is pressed
+    while True:
+        # Display the image and wait for a keypress
+        cv.imshow("Traffix", frame)
+        key = cv.waitKey(1) & 0xFF
+        # If the 'r' key is pressed, reset the cropping region
+        if key == ord("r"):
+            frame = clone.copy()
+        # If the 'c' key is pressed, break from the loop
+        elif key == ord("c"):
+            break
+
+    if len(crosswalk) == 4:
+        return
+    """
+
+
+def draw_shape(shape, frame):
+    # Setting color and thickness of the lines drawn
+    color = [255, 0, 0]
+    thickness = 1
+
+    # Drawing each line of the shape
+    frame = cv.line(frame, shape[0], shape[1], color, thickness)
+    frame = cv.line(frame, shape[1], shape[2], color, thickness)
+    frame = cv.line(frame, shape[2], shape[3], color, thickness)
+    frame = cv.line(frame, shape[3], shape[0], color, thickness)
+
+    return frame
