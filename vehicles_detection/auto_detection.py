@@ -13,4 +13,4 @@ class TrafficDetector:
         if len(self.boxes) <= traffic_bars[LOW_BAR]:
             traffic_level = LOW_LEVEL
 
-        else
+        else:

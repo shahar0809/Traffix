@@ -14,7 +14,7 @@ queue = queue.Queue()
 class System:
     def __init__(self):
         # Initializing the frames capturing module
-            self.capture = cap.StaticCapture('traffic.mp4')
+        self.capture = cap.StaticCapture('traffic.mp4')
 
     def run(self):
 
@@ -29,10 +29,9 @@ class System:
         confidence = 0.5
         detector = yolo.YoloDetector(threshold, confidence)
 
-
     def apply_detection(self, frame):
-
-        # Ini
+        # Init
+        pass
 
 
 if __name__ == '__main__':

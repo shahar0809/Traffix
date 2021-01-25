@@ -72,7 +72,6 @@ class WeatherAPI:
 class WeatherWrapper:
     VEHICLE_EXTREME_WEATHER = ['Rain', 'Snow']
     WEATHER_DESCRIPTIONS = ['light snow', 'mist', '']
-
     MIN_TEMP = 12
     MAX_TEMP = 38
     MIN_VISIBILITY = 10000
@@ -91,7 +90,6 @@ class WeatherWrapper:
         sunrise = self.weather.get_sunrise()
         extreme = self.weather.get_extreme_weather()
         visibility = self.weather.get_visibility()
-
         total_priority = 0
 
         if temp > self.MAX_TEMP:
