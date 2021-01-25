@@ -1,7 +1,7 @@
 import kinematics_calculation as kinematics
 import cmath
 import DB_Wrapper as db
-import weather_wrapper as weather
+import weather_wrapper
 
 crosswalk = 0
 m = kinematics.KinematicsCalculation(None, crosswalk)
@@ -15,6 +15,12 @@ class Decision:
     def get_traffic_level_from_database(self):
         raise NotImplementedError
 
+    def get_fps_from_database(self):
+        raise NotImplementedError
+
+    def get_weather(self, distance, box, m):
+        raise NotImplementedError
+
     def calculate_time(self, distance, velocity, acceleration):
         raise NotImplementedError
 
@@ -24,8 +30,6 @@ class Decision:
     def make_decision_for_vehicle(self, vehicle):
         raise NotImplementedError
 
-    def get_fps_from_database(self):
-        
 
 class DecisionMaker(Decision):
     def __init__(self, vehicles, traffic_level, weather):
@@ -41,7 +45,24 @@ class DecisionMaker(Decision):
             return database.get_traffic_data(day, hour)
 
         except Exception as e:
-            print(e)
+            return e
+
+    def get_fps_from_database(self):
+        database = db.SqliteDatabase()
+        try:
+            camera_id = int(input("Please enter a id from which you want the fps"))
+            return database.get_camera_details(camera_id)
+
+        except Exception as e:
+            return e
+
+    def get_weather(self, distance, box, m):
+        w = weather_wrapper.WeatherAPI([32.08472326847056, 34.77643445486234])
+        weather = weather_wrapper.WeatherWrapper(w)
+        p = weather.process_weather()
+        dist = abs(m.calc_distance(box) * p / 5)
+
+        return dist
 
     def calculate_time(self, distance, velocity, acceleration):
         a = acceleration / 2
@@ -67,9 +88,7 @@ class DecisionMaker(Decision):
         acceleration = m.calc_acceleration(box1, box2, box3, duration)
 
         calc = decision.calculate_time(distance, velocity, acceleration)
-        if calc[0] < 1 or calc[1] < 1:
-            return ""
-        elif calc[0] < 20 or calc[1] < 20:
+        if calc[0] < 20 or calc[1] < 20:
             return "Vehicles stopped. Pedestrians keep walking"
         else:
             return "Pedestrians stopped. Vehicles keep driving"
