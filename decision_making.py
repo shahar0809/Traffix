@@ -83,9 +83,10 @@ class DecisionMaker(Decision):
     def make_decision(self, box, box1, box2, box3, duration, m):
         decision = Decision()
 
-        distance = m.calc_distance(box)
+        dist = m.calc_distance(box)
         velocity = m.calc_velocity(box1, box2, duration)
         acceleration = m.calc_acceleration(box1, box2, box3, duration)
+        distance = self.get_weather(dist, box, m)
 
         calc = decision.calculate_time(distance, velocity, acceleration)
         if calc[0] < 20 or calc[1] < 20:
