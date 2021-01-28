@@ -12,6 +12,26 @@ MEDIUM_LEVEL = 1
 HIGH_LEVEL = 2
 
 
+class Vehicle:
+    def __init__(self, box, distance, velocity, acceleration):
+        self.distance = distance
+        self.velocity = velocity
+        self.acceleration = acceleration
+        self.box = box
+
+    def get_box(self):
+        return self.box
+
+    def get_distance(self):
+        return self.distance
+
+    def get_velocity(self):
+        return self.velocity
+
+    def get_acceleration(self):
+        return self.acceleration
+
+
 class CameraDetails:
     def __init__(self, camera_id, fps):
         self.fps = fps
@@ -29,7 +49,6 @@ class CameraDetails:
 
 class CrosswalkDetails:
     def __init__(self, points, width, length):
-
         self.points = []
         for point in points:
             self.points += geo.Point(point[0], point[1])
@@ -136,4 +155,23 @@ def draw_shape(shape, frame):
     frame = cv.line(frame, shape[2], shape[3], color, thickness)
     frame = cv.line(frame, shape[3], shape[0], color, thickness)
 
+    return frame
+
+
+def put_bounding_box(self, frame, vehicle):
+    box = vehicle.get_box()
+    # Extract the bounding box coordinates
+    (x, y) = (self.box[0], self.box[1])
+    (w, h) = (self.box[2], self.box[3])
+
+    # Get the color of the label detected
+    color = [0, 0, 255]
+    # Create a rectangle according to the bounding box's coordinates
+    cv.rectangle(frame, (x, y), (x + w, y + h), color, 1)
+
+    text = str('%.2f' % vehicle.get_distance()) + \
+           str('%.2f' % vehicle.get_velocity()) + \
+           str('%.2f' % vehicle.get_acceleration())
+
+    cv.putText(frame, text, (x, y - 5), cv.FONT_HERSHEY_SIMPLEX, 0.4, color, 1)
     return frame

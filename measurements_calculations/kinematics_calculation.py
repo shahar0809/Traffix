@@ -1,5 +1,5 @@
-import calc_measurements as measurements
-import math_classes as geo
+import measurements_calculations.calc_measurements as measurements
+import measurements_calculations.math_classes as geo
 
 
 class KinematicsCalculation(measurements.VehicleMeasure):
