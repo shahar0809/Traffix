@@ -1,6 +1,7 @@
 import cv2
 import logic
 
+
 class Capture:
     """
     The Capture class manages the frames captured from the video source.

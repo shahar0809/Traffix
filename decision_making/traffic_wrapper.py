@@ -3,6 +3,7 @@ import database.DB_Wrapper as DB
 from utils import LOW_BAR, MEDIUM_BAR, HIGH_BAR, LOW_LEVEL, MEDIUM_LEVEL, HIGH_LEVEL
 from datetime import datetime, timezone
 
+
 class TrafficDetector:
     def __init__(self, boxes):
         self.boxes = boxes

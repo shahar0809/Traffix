@@ -31,7 +31,7 @@ class System:
 
     def apply_detection(self, frame):
         # Init
-        pass
+
 
 
 if __name__ == '__main__':
