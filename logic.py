@@ -6,38 +6,68 @@ import threading
 import vehicles_detection.yolo_detection as yolo
 import capture_video as cap
 import measurements_calculations.kinematics_calculation as kinematics
+import database.DB_Wrapper as database
 import utils
 
 queue = queue.Queue()
 
 
 class System:
-    def __init__(self):
+    def __init__(self, camera_id, env_id):
+        self.result_queue = queue.Queue()
+
         # Initializing the frames capturing module
         self.capture = cap.StaticCapture('traffic.mp4')
-
-    def run(self):
-
-        capture = cap.StaticCapture('traffic.mp4')
-        # Defining a daemon thread (background) to capture frames
-        capture_thread = threading.Thread(target=capture.capture_frames, name='capture', daemon=True)
-        # Defining a daemon thread (background) to retrieve frames
-        retrieve_frames_thread = threading.Thread(target=capture.get_frames, name='retrieve_frames', daemon=True)
 
         # Initializing the vehicle detection module
         threshold = 0.3
         confidence = 0.5
-        detector = yolo.YoloDetector(threshold, confidence)
+        self.detector = yolo.YoloDetector(threshold, confidence)
+
+        # Initializing database connection
+        self.db = database.SqliteDatabase()
+        camera = database.get_camera_details(camera_id)
+        crosswalk = database.get_crosswalk_details(env_id)
+
+        self.calculator = kinematics.KinematicsCalculation(camera, crosswalk)
+
+    def run(self):
+        self.capture = cap.StaticCapture('traffic.mp4')
+        # Defining a daemon thread (background) to capture frames
+        capture_thread = threading.Thread(target=self.capture.capture_frames, name='capture', daemon=True)
+        # Defining a daemon thread (background) to retrieve frames
+        retrieve_frames_thread = threading.Thread(target=self.capture.get_frames, name='retrieve_frames', daemon=True)
+        # Defining a daemon thread (background) to display frames
+
+    def manage_frames(self, frames):
+        boxes = []
+        # Getting bounding boxes
+        for i in range(3):
+            boxes[i], frames[i] = self.apply_detection(frames[i])
+
+        # Calculating measurements for each vehicle detected
+        vehicles = []
+        for i in range(3):
+            vehicles[i] = self.calculator.get_measurements(boxes[i][0], boxes[i][1], boxes[i][2])
 
     def apply_detection(self, frame):
+<<<<<<< HEAD
         # Init
 
+=======
+        frames = self.capture.get_frames()
+        boxes, frame = self.detector.detect_objects(frame)
+        return boxes, frame
+
+    def show_frame(self):
+        if self.result_queue.siz() > 0:
+            frame = self.result_queue.pop()
+>>>>>>> a1633af0cd15cb21ad313a77881d537a600ec240
 
 
 if __name__ == '__main__':
     sys = System()
     sys.run()
-
 
 """
     m = kinematics.KinematicsCalculation(None, crosswalk)
@@ -54,5 +84,4 @@ if __name__ == '__main__':
         # Showing image
         cv.imshow('Traffix', frame)
         cv.waitKey(0)
-
 """

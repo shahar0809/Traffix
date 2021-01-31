@@ -1,4 +1,5 @@
-import math_classes as geo
+import measurements_calculations.math_classes as geo
+import utils
 
 X = 0
 Y = 1
@@ -64,4 +65,4 @@ class VehicleMeasure:
         # Calculate acceleration
         acceleration = self.calc_acceleration(box1, box2, box3, 1 / self.camera.fps)
 
-        return dist2, velocity1_2, acceleration
+        return utils.Vehicle(box2, dist2, velocity1_2, acceleration)

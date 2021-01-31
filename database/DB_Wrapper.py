@@ -53,6 +53,9 @@ class IDatabase:
 
 
 class SqliteDatabase(IDatabase):
+    def get_traffic_bars(self, env_id):
+        pass
+
     def __init__(self, file=None):
         super(SqliteDatabase, self).__init__(file)
         self.create_connection()
