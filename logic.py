@@ -51,10 +51,7 @@ class System:
             vehicles[i] = self.calculator.get_measurements(boxes[i][0], boxes[i][1], boxes[i][2])
 
     def apply_detection(self, frame):
-<<<<<<< HEAD
         # Init
-
-=======
         frames = self.capture.get_frames()
         boxes, frame = self.detector.detect_objects(frame)
         return boxes, frame
@@ -62,7 +59,6 @@ class System:
     def show_frame(self):
         if self.result_queue.siz() > 0:
             frame = self.result_queue.pop()
->>>>>>> a1633af0cd15cb21ad313a77881d537a600ec240
 
 
 if __name__ == '__main__':
