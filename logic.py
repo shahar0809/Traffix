@@ -1,5 +1,5 @@
 # Import necessary libraries
-import cv2
+import cv2 as cv
 import queue
 import threading
 import _thread
@@ -83,7 +83,7 @@ class System:
 
 
 if __name__ == '__main__':
-    sys = System()
+    sys = System(1, 1)
     sys.run()
 
 """
