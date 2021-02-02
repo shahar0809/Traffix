@@ -2,6 +2,8 @@
 import cv2 as cv
 import queue
 import threading
+import _thread
+
 # Modules
 import vehicles_detection.yolo_detection as yolo
 import capture_video as cap
@@ -26,10 +28,14 @@ class System:
 
         # Initializing database connection
         self.db = database.SqliteDatabase()
-        camera = database.get_camera_details(camera_id)
-        crosswalk = database.get_crosswalk_details(env_id)
+        camera = self.db.get_camera_details(camera_id)
+        crosswalk = self.db.get_crosswalk_details(env_id)
 
+        # Initialize class to calculate measurements
         self.calculator = kinematics.KinematicsCalculation(camera, crosswalk)
+
+        # Initialize a window to show frames
+        cv.namedWindow("Traffix", cv.WINDOW_NORMAL)
 
     def run(self):
         self.capture = cap.StaticCapture('traffic.mp4')
@@ -38,6 +44,16 @@ class System:
         # Defining a daemon thread (background) to retrieve frames
         retrieve_frames_thread = threading.Thread(target=self.capture.get_frames, name='retrieve_frames', daemon=True)
         # Defining a daemon thread (background) to display frames
+        show_frames_thread = threading.Thread(target=...)
+
+        # Starting threads
+        capture_thread.start()
+        retrieve_frames_thread.start()
+        try:
+            show_frames_thread.start()
+
+        except KeyboardInterrupt:
+            print("Traffix exited")
 
     def manage_frames(self, frames):
         boxes = []
@@ -51,14 +67,19 @@ class System:
             vehicles[i] = self.calculator.get_measurements(boxes[i][0], boxes[i][1], boxes[i][2])
 
     def apply_detection(self, frame):
-        # Init
-        frames = self.capture.get_frames()
         boxes, frame = self.detector.detect_objects(frame)
         return boxes, frame
 
     def show_frame(self):
-        if self.result_queue.siz() > 0:
-            frame = self.result_queue.pop()
+        if self.result_queue.qsize() > 0:
+            frame = self.result_queue.get()
+
+            cv.imshow("Traffix", frame)
+            cv.waitKey(0)
+
+            # Press Esc on keyboard to exit
+            if cv.waitKey(33) == 27:
+                _thread.interrupt_main()
 
 
 if __name__ == '__main__':
