@@ -56,7 +56,7 @@ class Capture:
             self._curr_frames += frame
 
         if len(self._curr_frames) == self.GROUP_SIZE:
-            logic.queue.append(self._curr_frames)
+            logic.frames_queue.append(self._curr_frames)
 
     def get_frames(self):
         """
@@ -66,11 +66,11 @@ class Capture:
         """
 
         # If the list is empty, or the current group is too small, there are not enough frames.
-        if logic.queue.size() == 0:
+        if logic.frames_queue.size() == 0:
             raise Exception("Not enough frames!")
         # Otherwise, return the first group in the list.
         else:
-            return logic.queue.pop()
+            return logic.frames_queue.pop()
 
     def handle_keys(self):
         """

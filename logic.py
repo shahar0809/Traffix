@@ -11,7 +11,7 @@ import measurements_calculations.kinematics_calculation as kinematics
 import database.DB_Wrapper as database
 import utils
 
-queue = queue.Queue()
+frames_queue = queue.Queue()
 
 
 class System:
@@ -83,7 +83,7 @@ class System:
 
 
 if __name__ == '__main__':
-    sys = System()
+    sys = System(0, 0)
     sys.run()
 
 """
