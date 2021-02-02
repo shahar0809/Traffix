@@ -12,7 +12,7 @@ class IDatabase:
     """
 
     """
-    db_file = 'traffixDB.db'
+    db_file = 'database//traffixDB.db'
 
     def __init__(self, file=None):
         if file is not None:
@@ -139,7 +139,7 @@ class SqliteDatabase(IDatabase):
         :return: camera details
         """
         # select camera details
-        sql_select = "SELECT * FROM cameras WHERE ID = ?"
+        sql_select = """SELECT * FROM cameras WHERE ID = ?"""
         cursor = self.conn.execute(sql_select, (camera_id,))
         record = cursor.fetchall()
 
@@ -162,6 +162,7 @@ class SqliteDatabase(IDatabase):
         # select crosswalk details
         sql_select = "SELECT Crosswalk_point_1, Crosswalk_point_2, Crosswalk_point_3, Crosswalk_point_4, width, length FROM environments WHERE ID = ?"
         cursor = self.conn.execute(sql_select, (env_id,))
+
         record = cursor.fetchall()
         for row in record:
             crosswalk_points = [row[0], row[1], row[2], row[3]]
@@ -206,7 +207,7 @@ class SqliteDatabase(IDatabase):
                      "VALUES (?)"
 
         try:
-            cursor.execute(sql_insert, (fps, ))
+            cursor.execute(sql_insert, (fps))
             self.conn.commit()
             cursor.close()
             return True

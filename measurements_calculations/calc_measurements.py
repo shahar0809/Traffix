@@ -18,8 +18,8 @@ class VehicleMeasure:
 
         # Get the known width and length of the crosswalk
         # width, length = self.crosswalk.width, self.crosswalk.length
-        width = 0.4
-        length = 1.5
+        width = crosswalk_details[1]
+        length = crosswalk_details[2]
 
         # Converting the crosswalk into Point objects
         point1 = geo.Point(self.crosswalk[0][X], self.crosswalk[0][Y])
