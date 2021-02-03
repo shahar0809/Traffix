@@ -1,4 +1,5 @@
 import numpy as np
+DELIMITER = ','
 
 
 class Point:
@@ -38,13 +39,19 @@ class Point:
         res1 = abs(line.get_slope() * self.x - 1 * self.get_y() + line.get_bias())
         return res1 / np.math.sqrt(line.get_slope() ** 2 + 1)
 
-    def to_string(self, crosswalk_points):
+    @staticmethod
+    def to_string(crosswalk_points):
         x = str(crosswalk_points[0])
         y = str(crosswalk_points[1])
         a = [x, y]
         return DELIMITER.join(a)
 
+    @staticmethod
+    def to_point(parsed):
+        parsed = parsed.split(DELIMITER)
+        return int(parsed[0]), int(parsed[1])
         
+
 class LinearLine:
     def __init__(self, init_slope, init_bias):
         self.slope = init_slope

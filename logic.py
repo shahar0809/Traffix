@@ -1,5 +1,6 @@
 # Import necessary libraries
 import cv2 as cv
+import time
 import queue
 import threading
 import _thread
@@ -55,6 +56,12 @@ class System:
         except KeyboardInterrupt:
             print("Traffix exited")
 
+    def retrieve_frames(self):
+        while True:
+            time.sleep(0.5)
+            frames = self.capture.get_frames()
+            self.manage_frames(frames)
+
     def manage_frames(self, frames):
         boxes = []
         # Getting bounding boxes
@@ -84,7 +91,6 @@ class System:
 
 if __name__ == '__main__':
     sys = System(1, 1)
-    sys = System(0, 0)
     sys.run()
 
 """
