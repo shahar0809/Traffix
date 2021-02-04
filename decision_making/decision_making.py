@@ -2,6 +2,7 @@ import measurements_calculations.kinematics_calculation as kinematics
 import cmath
 import database.DB_Wrapper as db
 import decision_making.weather_wrapper
+import utils
 
 crosswalk = 0
 m = kinematics.KinematicsCalculation(None, crosswalk)

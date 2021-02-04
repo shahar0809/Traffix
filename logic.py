@@ -6,7 +6,7 @@ import threading
 import vehicles_detection.yolo_detection as yolo
 import capture_video as cap
 import measurements_calculations.kinematics_calculation as kinematics
-import database.DB_Wrapper as database
+import database.DB_Wrapper as db
 import utils
 
 queue = queue.Queue()
@@ -25,7 +25,8 @@ class System:
         self.detector = yolo.YoloDetector(threshold, confidence)
 
         # Initializing database connection
-        self.db = database.SqliteDatabase()
+        self.db = db.SqliteDatabase()
+        database = db.SqliteDatabase()
         camera = database.get_camera_details(camera_id)
         crosswalk = database.get_crosswalk_details(env_id)
 
@@ -51,18 +52,30 @@ class System:
             vehicles[i] = self.calculator.get_measurements(boxes[i][0], boxes[i][1], boxes[i][2])
 
     def apply_detection(self, frame):
-<<<<<<< HEAD
         # Init
-
-=======
         frames = self.capture.get_frames()
         boxes, frame = self.detector.detect_objects(frame)
         return boxes, frame
 
+    def yolo_detection_on_frame(self, boxes, frame, crosswalk):
+        m = kinematics.KinematicsCalculation(None, crosswalk)
+        for box_index in boxes.flatten():
+            dist = m.calc_distance(self.detector.boxes[box_index])
+            utils.draw_shape(crosswalk, frame)
+
+            frame = self.detector.put_bounding_box(box_index, frame, dist)
+            # Saving image
+            cv.imwrite("result.jpg", frame)
+            # Showing image
+            cv.imshow('Traffix', frame)
+            cv.waitKey(0)
+
+    def apply_measurements_on_vehicle(self, frame):
+        pass
+    
     def show_frame(self):
         if self.result_queue.siz() > 0:
             frame = self.result_queue.pop()
->>>>>>> a1633af0cd15cb21ad313a77881d537a600ec240
 
 
 if __name__ == '__main__':
