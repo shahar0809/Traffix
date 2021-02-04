@@ -51,9 +51,15 @@ class CrosswalkDetails:
     def __init__(self, points, width, length):
         self.points = []
         for point in points:
-            self.points += geo.Point(point[0], point[1])
+            self.points += [geo.Point(point[0], point[1])]
         self.width = width
         self.length = length
+
+    def get_points(self):
+        return self.points
+
+    def set_points(self, points):
+        self.points = points
 
     def set_width(self, width):
         self.width = width
@@ -111,36 +117,40 @@ class Environment:
         return self.length
 
 
-def capture_mouse_click(event, x, y, flags, param):
-    """
-    crosswalk, image
+class CaptureCrosswalk:
+    def __init__(self):
+        self.crosswalk = []
+        self.image = None
 
-    if event == cv.EVENT_LBUTTONDOWN:
-        image = cv.circle(image, (x, y), radius=3, color=(255, 0, 0), thickness=-2)
-        crosswalk += [(x, y)]
-    """
+    def capture_mouse_click(self, event, x, y, flags, param):
+        if event == cv.EVENT_LBUTTONDOWN:
+            self.image = cv.circle(self.image, (x, y), radius=3, color=(255, 0, 0), thickness=-2)
+            self.crosswalk += [(x, y)]
 
+    def get_crosswalk(self, frame):
+        print("Press c to send the crosswalk marked")
+        print("Press r to reset the crosswalk markings")
 
-def get_crosswalk(frame):
-    """
-    clone = frame.copy()
-    cv.namedWindow("Traffix")
-    cv.setMouseCallback("Traffix", capture_point)
+        clone = frame.copy()
+        self.image = frame
+        cv.namedWindow("Traffix")
+        cv.setMouseCallback("Traffix", self.capture_mouse_click)
 
-    # Keep looping until the 'q' key is pressed
-    while True:
-        # Display the image and wait for a keypress
-        cv.imshow("Traffix", frame)
-        key = cv.waitKey(1) & 0xFF
-        # If the 'r' key is pressed, reset the cropping region
-        if key == ord("r"):
-            frame = clone.copy()
-        # If the 'c' key is pressed, break from the loop
-        elif key == ord("c"):
-            break
+        # Keep looping until the 'c' key is pressed
+        while True:
+            # Display the image and wait for a keypress
+            cv.imshow("Traffix", self.image)
+            key = cv.waitKey(1) & 0xFF
+            # If the 'r' key is pressed, reset the cropping region
+            if key == ord("r"):
+                self.image = clone.copy()
+                self.crosswalk = []
+            # If the 'c' key is pressed, break from the loop
+            elif key == ord("c"):
+                return self.crosswalk
 
-    if len(crosswalk) == 4:
-        return
+        if len(self.crosswalk) == 4:
+            return
     """
 
 
@@ -174,4 +184,4 @@ def put_bounding_box(self, frame, vehicle):
            str('%.2f' % vehicle.get_acceleration())
 
     cv.putText(frame, text, (x, y - 5), cv.FONT_HERSHEY_SIMPLEX, 0.4, color, 1)
-    return frame
+    return frame"""

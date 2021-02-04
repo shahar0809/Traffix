@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/Traffix.iml" filepath="$PROJECT_DIR$/.idea/Traffix.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/traffix.iml" filepath="$PROJECT_DIR$/.idea/traffix.iml" />
     </modules>
   </component>
 </project>

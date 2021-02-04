@@ -1,5 +1,6 @@
 import sqlite3
 import utils
+from measurements_calculations.math_classes import Point
 
 AMOUNT_OF_DAYS = 7
 AMOUNT_OF_HOURS = 24
@@ -12,7 +13,7 @@ class IDatabase:
     """
 
     """
-    db_file = 'traffixDB.db'
+    db_file = 'database//traffixDB.db'
 
     def __init__(self, file=None):
         if file is not None:
@@ -139,7 +140,7 @@ class SqliteDatabase(IDatabase):
         :return: camera details
         """
         # select camera details
-        sql_select = "SELECT * FROM cameras WHERE ID = ?"
+        sql_select = """SELECT * FROM cameras WHERE ID = ?"""
         cursor = self.conn.execute(sql_select, (camera_id,))
         record = cursor.fetchall()
 
@@ -162,15 +163,16 @@ class SqliteDatabase(IDatabase):
         # select crosswalk details
         sql_select = "SELECT Crosswalk_point_1, Crosswalk_point_2, Crosswalk_point_3, Crosswalk_point_4, width, length FROM environments WHERE ID = ?"
         cursor = self.conn.execute(sql_select, (env_id,))
+
         record = cursor.fetchall()
+        crosswalk_points = []
+
         for row in record:
-            crosswalk_points = [row[0], row[1], row[2], row[3]]
+            for i in range(4):
+                crosswalk_points += [Point.to_point(row[i])]
             width = row[4]
             length = row[5]
-            #utils.CrosswalkDetails(crosswalk_points, width, length)
-
-            crosswalk_details = [crosswalk_points, width, length]
-            return crosswalk_details
+            return utils.CrosswalkDetails(crosswalk_points, width, length)
 
     def get_environment(self, env_id):
         """
@@ -182,17 +184,19 @@ class SqliteDatabase(IDatabase):
         sql_select = """SELECT * FROM environments WHERE ID = ?"""
         cursor = self.conn.execute(sql_select, (env_id,))
         record = cursor.fetchall()
+        crosswalk_points = []
+
         for row in record:
             env_id = row[0]
             camera_id = row[1]
-            crosswalk_points = [row[2], row[3], row[4], row[5]]
+            for i in range(4):
+                crosswalk_points += [Point.to_point(row[i])]
+
             bars = [row[6], row[7], row[8]]
             width = row[9]
             length = row[10]
-            utils.Environment(env_id, camera_id, crosswalk_points, bars, width, length)
 
-            environment_details = [env_id, camera_id, crosswalk_points, bars, width, length]
-            return environment_details
+            return utils.Environment(env_id, camera_id, crosswalk_points, bars, width, length)
 
     def add_camera_details(self, fps):
         """
@@ -206,7 +210,7 @@ class SqliteDatabase(IDatabase):
                      "VALUES (?)"
 
         try:
-            cursor.execute(sql_insert, (fps, ))
+            cursor.execute(sql_insert, (fps))
             self.conn.commit()
             cursor.close()
             return True
@@ -222,6 +226,7 @@ class SqliteDatabase(IDatabase):
         :param crosswalk_id: The place where we want to update.
         :return: true if the update works, false if doesn't.
         """
+        crosswalk_points = [Point.to_string(crosswalk_points[i]) for i in range(4)]
         cursor = self.conn.cursor()
         # update crosswalk details
         sql_update = "UPDATE environments SET crosswalk_point_1 = ?, crosswalk_point_2 = ?, crosswalk_point_3 = ?, crosswalk_point_4 = ? WHERE env_id = ?"
@@ -303,6 +308,8 @@ class SqliteDatabase(IDatabase):
     def add_environment(self, camera_id, crosswalk_points, bars, width, length):
         cursor = self.conn.cursor()
         # insert environment details
+        crosswalk_points = [Point.to_string(crosswalk_points[i]) for i in range(4)]
+
         sql_insert = '''INSERT INTO environments (camera_id, crosswalk_point_1, crosswalk_point_2, crosswalk_point_3, crosswalk_point_4, traffic_bar_low, traffic_bar_mid, traffic_bar_high, width, length) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
         val = (camera_id, crosswalk_points[0], crosswalk_points[1], crosswalk_points[2], crosswalk_points[3], bars[0], bars[1], bars[2], width, length)
         try:

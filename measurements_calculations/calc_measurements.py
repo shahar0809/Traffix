@@ -18,13 +18,10 @@ class VehicleMeasure:
 
         # Get the known width and length of the crosswalk
         # width, length = self.crosswalk.width, self.crosswalk.length
-        width = 0.4
-        length = 1.5
+        width = crosswalk_details.get_width()
+        length = crosswalk_details.get_length()
 
-        # Converting the crosswalk into Point objects
-        point1 = geo.Point(self.crosswalk[0][X], self.crosswalk[0][Y])
-        point2 = geo.Point(self.crosswalk[1][X], self.crosswalk[1][Y])
-        point3 = geo.Point(self.crosswalk[2][X], self.crosswalk[2][Y])
+        point1, point2, point3 = crosswalk_details.get_points()[0:3]
 
         # Get the pixels-to-meters ratio from know size
         ratio_by_length = point1.distance(point2) / length
