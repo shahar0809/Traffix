@@ -66,11 +66,11 @@ class Capture:
         """
 
         # If the list is empty, or the current group is too small, there are not enough frames.
-        if logic.frames_queue.size() == 0:
+        if logic.frames_queue.qsize() == 0:
             raise Exception("Not enough frames!")
         # Otherwise, return the first group in the list.
         else:
-            return logic.frames_queue.pop()
+            return logic.frames_queue.get()
 
     def handle_keys(self):
         """
