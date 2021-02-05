@@ -46,14 +46,11 @@ class Point:
         a = [x, y]
         return DELIMITER.join(a)
 
-<<<<<<< HEAD
-=======
     @staticmethod
     def to_point(parsed):
         parsed = parsed.split(DELIMITER)
         return int(parsed[0]), int(parsed[1])
         
->>>>>>> 85b592cbaea55d064a49235ce0ec588cba65af7f
 
 class LinearLine:
     def __init__(self, init_slope, init_bias):
