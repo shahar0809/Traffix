@@ -44,7 +44,7 @@ class Point:
         a = [x, y]
         return DELIMITER.join(a)
 
-        
+
 class LinearLine:
     def __init__(self, init_slope, init_bias):
         self.slope = init_slope
