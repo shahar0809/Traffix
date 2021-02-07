@@ -1,4 +1,5 @@
 import numpy as np
+import math
 DELIMITER = ','
 
 
@@ -17,8 +18,8 @@ class Point:
         return 'x=' + str(self.x) + ', y=' + str(self.y)
 
     def distance(self, target):
-        x_diff = target.x - self.x
-        y_diff = target.y - self.y
+        x_diff = target[0] - self.x
+        y_diff = target[1] - self.y
         dist = np.math.sqrt(x_diff ** 2 + y_diff ** 2)
         return dist
 
@@ -43,8 +44,8 @@ class Point:
     def to_string(crosswalk_points):
         x = str(crosswalk_points[0])
         y = str(crosswalk_points[1])
-        a = [x, y]
-        return DELIMITER.join(a)
+        point = [x, y]
+        return DELIMITER.join(point)
 
     @staticmethod
     def to_point(parsed):

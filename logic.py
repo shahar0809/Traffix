@@ -31,7 +31,6 @@ class System:
         self.db = database.SqliteDatabase()
         camera = self.db.get_camera_details(camera_id)
         crosswalk = self.db.get_crosswalk_details(env_id)
-
         # Initialize class to calculate measurements
         self.calculator = kinematics.KinematicsCalculation(camera, crosswalk)
 

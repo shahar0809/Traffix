@@ -65,6 +65,7 @@ class CrosswalkDetails:
         self.width = width
 
     def get_width(self):
+        print(self.width)
         return self.width
 
     def set_length(self, length):

@@ -15,17 +15,19 @@ class VehicleMeasure:
         """
         self.camera = camera_details
         self.crosswalk = crosswalk_details
-
         # Get the known width and length of the crosswalk
         # width, length = self.crosswalk.width, self.crosswalk.length
-        width = crosswalk_details.get_width()
-        length = crosswalk_details.get_length()
+        width = crosswalk_details[1]
+        length = crosswalk_details[2]
 
-        point1, point2, point3 = crosswalk_details.get_points()[0:3]
+        point1, point2, point3 = crosswalk_details[0][0:3]
+
+        point_1 = geo.Point(point1[0], point1[1])
+        point_2 = geo.Point(point2[0], point2[1])
 
         # Get the pixels-to-meters ratio from know size
-        ratio_by_length = point1.distance(point2) / length
-        ratio_by_width = point2.distance(point3) / width
+        ratio_by_length = point_1.distance(point2) / length
+        ratio_by_width = point_2.distance(point3) / width
 
         # Taking the average of the ratios (Assuming that the marking of the crosswalk isn't accurate)
         self.pixels_ratio = ratio_by_length + ratio_by_width / 2
@@ -63,3 +65,4 @@ class VehicleMeasure:
         acceleration = self.calc_acceleration(box1, box2, box3, 1 / self.camera.fps)
 
         return utils.Vehicle(box2, dist2, velocity1_2, acceleration)
+
