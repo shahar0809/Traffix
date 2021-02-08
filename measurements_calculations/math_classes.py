@@ -18,8 +18,8 @@ class Point:
         return 'x=' + str(self.x) + ', y=' + str(self.y)
 
     def distance(self, target):
-        x_diff = target[0] - self.x
-        y_diff = target[1] - self.y
+        x_diff = target.get_x() - self.x
+        y_diff = target.get_y() - self.y
         dist = np.math.sqrt(x_diff ** 2 + y_diff ** 2)
         return dist
 

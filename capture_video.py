@@ -4,8 +4,6 @@ import logic
 
 class Capture:
     """
-    
-    
     The Capture class manages the frames captured from the video source.
     ___________
     Attributes:
@@ -29,6 +27,7 @@ class Capture:
         @:param self: Instance of the Capture class
         @:return: None
         """
+        print("capture frame")
         cap = self.video_capture()
 
         while True:
@@ -67,15 +66,12 @@ class Capture:
         :return: Current group of frames
         @:rtype: List containing 3 frames
         """
+        print("get frame")
+        if logic.frames_queue.qsize() == 0:
+            raise Exception("Not enough frames!")
 
-        try:
-            # If the list is not empty and the current group is too small,, return the first group in the list.
-            #if logic.frames_queue.qsize() != 0:
+        else:
             return logic.frames_queue.get()
-
-        except Exception as e:
-            print("Not enough frames!\n")
-            print(e)
 
     def handle_keys(self):
         """

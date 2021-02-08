@@ -172,9 +172,7 @@ class SqliteDatabase(IDatabase):
                 crosswalk_points += [Point.to_point(row[i])]
             width = row[4]
             length = row[5]
-            utils.CrosswalkDetails(crosswalk_points, width, length)
-            crosswalk_details = [crosswalk_points, width, length]
-            return crosswalk_details
+            return utils.CrosswalkDetails(crosswalk_points, width, length)
 
     def get_environment(self, env_id):
         """

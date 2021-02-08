@@ -42,13 +42,16 @@ class System:
         # Defining a daemon thread (background) to capture frames
         capture_thread = threading.Thread(target=self.capture.capture_frames, name='capture', daemon=True)
         # Defining a daemon thread (background) to retrieve frames
-        retrieve_frames_thread = threading.Thread(target=self.capture.get_frames, name='retrieve_frames', daemon=True)
+        retrieve_frames_thread = threading.Thread(target=self.retrieve_frames, name='retrieve_frames', daemon=True)
         # Defining a daemon thread (background) to display frames
-        show_frames_thread = threading.Thread(target=...)
+        show_frames_thread = threading.Thread(target=self.show_frames, name='display_frames', daemon=True)
 
         # Starting threads
         capture_thread.start()
-        retrieve_frames_thread.start()
+        try:
+            retrieve_frames_thread.start()
+        except Exception as e:
+            print(e)
         try:
             show_frames_thread.start()
 
@@ -56,6 +59,7 @@ class System:
             print("Traffix exited")
 
     def retrieve_frames(self):
+        print("ret")
         while True:
             time.sleep(0.5)
             frames = self.capture.get_frames()
@@ -71,21 +75,25 @@ class System:
         vehicles = []
         for i in range(3):
             vehicles[i] = self.calculator.get_measurements(boxes[i][0], boxes[i][1], boxes[i][2])
+            result = (frames[i], vehicles[i])
+            self.result_queue.append(result)
 
     def apply_detection(self, frame):
         boxes, frame = self.detector.detect_objects(frame)
         return boxes, frame
 
-    def show_frame(self):
-        if self.result_queue.qsize() > 0:
-            frame = self.result_queue.get()
+    def show_frames(self):
+        print("show frame")
+        while True:
+            if self.result_queue.qsize() > 0:
+                frame = self.result_queue.get()
 
-            cv.imshow("Traffix", frame)
-            cv.waitKey(0)
+                cv.imshow("Traffix", frame)
+                cv.waitKey(0)
 
-            # Press Esc on keyboard to exit
-            if cv.waitKey(33) == 27:
-                _thread.interrupt_main()
+                # Press Esc on keyboard to exit
+                if cv.waitKey(33) == 27:
+                    _thread.interrupt_main()
 
 
 if __name__ == '__main__':
