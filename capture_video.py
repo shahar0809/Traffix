@@ -54,8 +54,7 @@ class Capture:
         """
 
         if len(self._curr_frames) < self.GROUP_SIZE:
-
-            self._curr_frames += frame
+            self._curr_frames += [frame]
 
         if len(self._curr_frames) == self.GROUP_SIZE:
             logic.frames_queue.append(self._curr_frames)

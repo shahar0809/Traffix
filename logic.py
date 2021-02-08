@@ -48,13 +48,12 @@ class System:
 
         # Starting threads
         capture_thread.start()
+
         try:
             retrieve_frames_thread.start()
+            show_frames_thread.start()
         except Exception as e:
             print(e)
-        try:
-            show_frames_thread.start()
-
         except KeyboardInterrupt:
             print("Traffix exited")
 
