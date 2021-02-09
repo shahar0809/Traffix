@@ -1,5 +1,4 @@
 import cv2
-import logic
 
 
 class Capture:
@@ -21,7 +20,7 @@ class Capture:
     def video_capture(self):
         raise NotImplementedError
 
-    def capture_frames(self):
+    def capture_frames(self, frames_queue):
         """
         Gets the frames from the video source (Pure virtual function).
         @:param self: Instance of the Capture class
@@ -36,20 +35,22 @@ class Capture:
             if ret is False: break
 
             if self._iteration % self.TIME_GAP == 0:
-                self.add_frame(frame)
+                cv2.imshow('Traffix', frame)
+                self.add_frame(frame, frames_queue)
 
             # Exiting program if the 'q' key was pressed
-            if self.handle_keys() is True: break
+            if self.handle_keys(frames_queue) is True: break
             self._iteration += 1
 
         # When everything is done, release the capture
         cap.release()
         cv2.destroyAllWindows()
 
-    def add_frame(self, frame):
+    def add_frame(self, frame, frames_queue):
         """
         Adds a frame to the list containing groups of frames.
         :param frame: The frame to be added
+        :param frames_queue: The queue containing the groups of frames
         :return: None
         """
 
@@ -57,22 +58,22 @@ class Capture:
             self._curr_frames += [frame]
 
         if len(self._curr_frames) == self.GROUP_SIZE:
-            logic.frames_queue.append(self._curr_frames)
+            frames_queue.put(self._curr_frames)
 
-    def get_frames(self):
+    def get_frames(self, frames_queue):
         """
         Retrieves the current group of frames in the list.
         :return: Current group of frames
         @:rtype: List containing 3 frames
         """
         print("get frame")
-        if logic.frames_queue.qsize() == 0:
+        if frames_queue.qsize() == 0:
             raise Exception("Not enough frames!")
 
         else:
-            return logic.frames_queue.get()
+            return frames_queue.get()
 
-    def handle_keys(self):
+    def handle_keys(self, frames_queue):
         """
         Handles events of keys being pressed.
         @:keyword: If 'g' is pressed: The function 'get_frames' gets called.
@@ -86,7 +87,7 @@ class Capture:
         # Getting the current group of frames
         if pressed_key == ord('g'):
             try:
-                print(len(self.get_frames()))
+                print(len(self.get_frames(frames_queue)))
 
             except Exception as e:
                 print(e), print()

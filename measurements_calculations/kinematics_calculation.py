@@ -7,6 +7,9 @@ class KinematicsCalculation(measurements.VehicleMeasure):
     Calculates the measurements based on kinematics.
     """
 
+    def __init__(self, camera, crosswalk):
+        super().__init__(camera, crosswalk)
+
     def calc_distance(self, box):
         """
         Calculates the distance of a vehicle detected (bounding box format) to the crosswalk (4 points).
@@ -15,6 +18,8 @@ class KinematicsCalculation(measurements.VehicleMeasure):
         :return: the distance from the box to the crosswalk in meters.
         """
         line, side = self.choose_crosswalk_line(box)
+        if line is None:
+            return 0
         (x, y) = KinematicsCalculation.choose_point(box, line, side)
         print("POINT:")
         print(x, y)
@@ -35,15 +40,15 @@ class KinematicsCalculation(measurements.VehicleMeasure):
         (x, y) = (box[0], box[1])
         (width, height) = (box[2], box[3])
 
-        # TODO: Add db access, and take crosswalk details from there
+        crosswalk_points = self.crosswalk.get_points()
 
         # Define linear lines of the crosswalk
-        crosswalk_line1 = geo.LinearLine.gen_line_from_points(self.crosswalk[0], self.crosswalk[2])
-        crosswalk_line2 = geo.LinearLine.gen_line_from_points(self.crosswalk[1], self.crosswalk[3])
+        crosswalk_line1 = geo.LinearLine.gen_line_from_points(crosswalk_points[0], crosswalk_points[2])
+        crosswalk_line2 = geo.LinearLine.gen_line_from_points(crosswalk_points[1], crosswalk_points[3])
 
         # Getting the maximal and minimal values of the crosswalk
-        crosswalk_max_x = max(self.crosswalk, key=lambda item: item[1])[0]
-        crosswalk_min_x = min(self.crosswalk, key=lambda item: item[1])[0]
+        crosswalk_max_x = max(crosswalk_points, key=lambda item: item.get_x()).get_x()
+        crosswalk_min_x = min(crosswalk_points, key=lambda item: item.get_x()).get_x()
         '''
         Choosing the closest line based on the locations of the box and the crosswalk
         '''
@@ -86,8 +91,8 @@ class KinematicsCalculation(measurements.VehicleMeasure):
 
     def calc_velocity(self, box1, box2, duration):
         dist_diff = self.calc_distance(box2) - self.calc_distance(box1)
-        return dist_diff / (1 / self.camera_details.fps)
+        return dist_diff / (1 / self.camera_details.get_fps())
 
     def calc_acceleration(self, box1, box2, box3, duration):
         velocity_diff = self.calc_velocity(box2, box3, duration) - self.calc_velocity(box1, box2, duration)
-        return velocity_diff / (1 / self.fps)
+        return velocity_diff / (1 / self.camera_details.get_fps())

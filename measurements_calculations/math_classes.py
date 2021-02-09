@@ -66,8 +66,8 @@ class LinearLine:
 
     @staticmethod
     def gen_line_from_points(p1, p2):
-        p1 = Point(p1[0], p1[1])
-        p2 = Point(p2[0], p2[1])
+        p1 = Point(p1.get_x(), p1.get_y())
+        p2 = Point(p2.get_x(), p2.get_y())
         slope = p2.slope(p1)
         bias = p1.get_y() - slope * p1.get_x()
         line = LinearLine(slope, bias)

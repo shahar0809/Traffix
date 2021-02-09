@@ -13,7 +13,7 @@ class VehicleMeasure:
         :param camera_details: Details about the camera in order to calculate distance in meters.
         :param crosswalk_details: The location of the crosswalk in the frame, and its size in meters.
         """
-        self.camera = camera_details
+        self.camera_details = camera_details
         self.crosswalk = crosswalk_details
         # Get the known width and length of the crosswalk
         # width, length = self.crosswalk.width, self.crosswalk.length
@@ -44,22 +44,26 @@ class VehicleMeasure:
     def calc_acceleration(self, box1, box2, box3, duration):
         raise NotImplementedError
 
-    def get_measurements(self, box1, box2, box3):
+    def get_measurements(self, boxes):
         """
         Returns the measurements of each vehicle detected (as the Vehicle class).
         :return: Vehicle
         """
+        box1 = boxes[0]
+        box2 = boxes[1]
+        box3 = boxes[2]
+
         # Calculating distances of all boxes
         dist1 = self.calc_distance(box1)
         dist2 = self.calc_distance(box2)
         dist3 = self.calc_distance(box3)
 
         # Calculate velocity
-        velocity1_2 = self.calc_velocity(box1, box2, 1 / self.camera.fps)
-        velocity2_3 = self.calc_velocity(box2, box3, 1 / self.camera.fps)
+        velocity1_2 = self.calc_velocity(box1, box2, 1 / self.camera_details.get_fps())
+        velocity2_3 = self.calc_velocity(box2, box3, 1 / self.camera_details.get_fps())
 
         # Calculate acceleration
-        acceleration = self.calc_acceleration(box1, box2, box3, 1 / self.camera.fps)
+        acceleration = self.calc_acceleration(box1, box2, box3, 1 / self.camera_details.get_fps())
 
         return utils.Vehicle(box2, dist2, velocity1_2, acceleration)
 
