@@ -34,9 +34,8 @@ class Capture:
             ret, frame = cap.read()
             if ret is False: break
 
-            if self._iteration % self.TIME_GAP == 0:
-                cv2.imshow('Traffix', frame)
-                self.add_frame(frame, frames_queue)
+            cv2.imshow('Traffix', frame)
+            self.add_frame(frame, frames_queue)
 
             # Exiting program if the 'q' key was pressed
             if self.handle_keys(frames_queue) is True: break
@@ -59,6 +58,7 @@ class Capture:
 
         if len(self._curr_frames) == self.GROUP_SIZE:
             frames_queue.put(self._curr_frames)
+            self._curr_frames = [self._curr_frames[1], self._curr_frames[2]]
 
     def get_frames(self, frames_queue):
         """
@@ -101,8 +101,6 @@ class LiveCapture(Capture):
 
 
 class StaticCapture(Capture):
-    video_path = ""
-
     def __init__(self, video_path):
         self.video_path = video_path
 

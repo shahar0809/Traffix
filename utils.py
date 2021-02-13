@@ -156,6 +156,7 @@ class CaptureCrosswalk:
                 self.crosswalk = []
             # If the 'c' key is pressed, break from the loop
             elif key == ord("c"):
+                cv2.destroyAllWindows()
                 return self.crosswalk
 
 
@@ -184,9 +185,9 @@ def put_bounding_box(frame, vehicle):
     # Create a rectangle according to the bounding box's coordinates
     cv2.rectangle(frame, (x, y), (x + w, y + h), color, 1)
 
-    text = str('%.2f' % vehicle.get_distance()) + \
-           str(vehicle.get_id())
+    text = str(vehicle.get_id()) + ": " +\
+        str('%.2f' % vehicle.get_distance())
 
     cv2.putText(frame, text, (x, y - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.4, color, 1)
-    frame = cv2.circle(frame, tracker.CentroidTracker.calculate_centroid(box), radius=5, color=(0, 0, 255), thickness=2)
+    frame = cv2.circle(frame, tracker.CentroidTracker.calculate_centroid(box), radius=2, color=(0, 100, 200), thickness=2)
     return frame

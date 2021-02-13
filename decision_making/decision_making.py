@@ -1,10 +1,8 @@
 import measurements_calculations.kinematics_calculation as kinematics
 import cmath
 import database.DB_Wrapper as db
-import decision_making.weather_wrapper
-
-crosswalk = 0
-m = kinematics.KinematicsCalculation(None, crosswalk)
+import decision_making.weather_wrapper as weather_wrapper
+import random
 
 HIGH_LEVEL = 3
 MID_LEVEL = 2
@@ -12,19 +10,23 @@ LOW_LEVEL = 1
 
 
 class Decision:
+    def __init__(self, camera, location):
+        self.duration = 1 / camera.get_fps()
+        self.location = location
+
     def get_traffic_level_from_database(self):
         raise NotImplementedError
 
     def get_fps_from_database(self):
         raise NotImplementedError
 
-    def get_weather(self, distance, box):
+    def distance_change(self):
         raise NotImplementedError
 
     def calculate_time(self, distance, velocity, acceleration):
         raise NotImplementedError
 
-    def make_decision(self, box, box1, box2, box3, duration):
+    def make_decision(self, vehicles):
         raise NotImplementedError
 
     def make_decision_for_vehicle(self, vehicle):
@@ -32,10 +34,8 @@ class Decision:
 
 
 class DecisionMaker(Decision):
-    def __init__(self, vehicles, traffic_level, weather, camera, crosswalk):
-        self.vehicles = vehicles
-        self.traffic_level = traffic_level
-        self.weather = weather
+    def __init__(self, camera, crosswalk, location):
+        super().__init__(camera, location)
         self.calculator = kinematics.KinematicsCalculation(camera, crosswalk)
 
     # Not necessary :(
@@ -75,15 +75,17 @@ class DecisionMaker(Decision):
     # Also - it doesn't look at one car - it looks at the weather, and if it's risky, changes
     # the distance of all vehicles. The return should be a value that's put into all distances.
     # This function is not supposed to consider the vehicles.
-    def get_weather(self, distance, box, location):
+    def distance_change(self):
         """
-        The function will recalculate the distance with the process weather.
-        :param: box: The bounding box of the vehicle detected.
-        :param: distance: The distance from the box to the crosswalk in meters.
-        :return: Distance
+        ***I CHANGED THE DESCRIPTION BASED ON WHAT THIS FUNCTION NEEDS TO DO***
+        This function calculates a scalar to the distance vector.
+        The scalar is based on the current weather.
+        :param: location: The location in which we want to get the weather
+        :return: A scalar
+        :rtype: float
         """
-        weather_data = decision_making.weather_wrapper.WeatherAPI(location)
-        weather_wrapper = decision_making.weather_wrapper.WeatherWrapper(weather_data)
+        weather_data = weather_wrapper.WeatherAPI(self.location)
+        weather_wrapper = weather_wrapper.WeatherWrapper(weather_data)
         total = weather_wrapper.process_weather()
         dist = abs(self.calculator.calc_distance(box) * total / 5)
 
@@ -115,7 +117,7 @@ class DecisionMaker(Decision):
             x2 = (-b - disc) / (2 * a)
             return x1.real, x2.real
 
-    def make_decision(self, boxes, duration):
+    def make_decision(self, boxes):
         """
         The function makes a decision for vehicles based on environment variables.
         :param boxes: The bounding boxes of the vehicle detected in the group of frames.
@@ -123,15 +125,18 @@ class DecisionMaker(Decision):
         :return: The decision - Is it safe to cross or not
         """
         # TODO: this needs to look at ALL vehicles in the frame. You only looked at one
-
+        """
         dist, velocity, acceleration = self.calculator.get_measurements(boxes)
         distance = self.get_weather(dist, box, m)
 
         calc = decision.calculate_time(distance, velocity, acceleration)
         if calc[0] < 20 or calc[1] < 20:
-            return "Vehicles stopped. Pedestrians keep walking"
+            return True
         else:
-            return "Pedestrians stopped. Vehicles keep driving"
+            return False
+        """
+        # Random for now just so that it would run
+        return bool(random.getrandbits(1))
 
     def make_decision_for_vehicle(self, vehicle):
         """
@@ -145,8 +150,8 @@ class DecisionMaker(Decision):
 
         calc = decision.calculate_time(vehicle.distance, vehicle.velocity, vehicle.acceleration)
         if calc[0] < 20 or calc[1] < 20:
-            return "Vehicles stopped. Pedestrians keep walking"
+            return True
         else:
-            return "Pedestrians stopped. Vehicles keep driving"
+            return False
 
 

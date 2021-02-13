@@ -36,9 +36,6 @@ class YoloDetector(detector.Detector):
     LABELS_PATH = os.path.join(ROOT_DIR, 'yolo', 'coco.names')
 
     def __init__(self, threshold, min_confidence, tracker):
-        super().__init__(threshold, min_confidence, tracker)
-        self.load_net()
-
         # Net / Net parameters
         self.net = None
         self.layer_names = None
@@ -47,6 +44,9 @@ class YoloDetector(detector.Detector):
         self.classIDs = []
         self.boxes = []
         self.confidences = []
+
+        super().__init__(threshold, min_confidence, tracker)
+        self.load_net()
 
     def load_net(self):
         """
@@ -120,7 +120,10 @@ class YoloDetector(detector.Detector):
         # If no objects were detected, return the original frame
         if len(idxs) == 0: return None, frame
 
+        nms_boxes = []
+        for i in idxs.flatten():
+            nms_boxes.append(self.boxes[i])
+        self.boxes = nms_boxes
         self.tracker.update_objects(self.boxes)
 
-        print("FINISHED")
         return self.boxes, frame

@@ -4,6 +4,7 @@ from collections import OrderedDict
 from scipy.spatial import distance as dist
 import measurements_calculations.math_classes as math
 
+
 class CentroidTracker:
     def __init__(self, crosswalk):
         self.max_disappeared = 50
@@ -13,14 +14,14 @@ class CentroidTracker:
         self.objects = OrderedDict()
         self.disappeared_objects = OrderedDict()
         crosswalk_points = self.crosswalk.get_points()
-        self.line = math.LinearLine(crosswalk_points[0], crosswalk_points[1])
+        self.line = math.LinearLine.gen_line_from_points(crosswalk_points[0], crosswalk_points[1])
 
     @staticmethod
     def calculate_centroid(box):
         x, y, w, h = box[0], box[1], box[2], box[3]
         centroid_x = (x + x + w) / 2
         centroid_y = (y + y + h) / 2
-        return centroid_x, centroid_y
+        return int(centroid_x), int(centroid_y)
 
     def register_object(self, box, centroid):
         centroids = [Detection(box, centroid), None, None]
@@ -47,7 +48,8 @@ class CentroidTracker:
         self.update_new_detections(boxes)
 
         # Removing objects that crossed the crosswalk
-        for id in self.objects.keys():
+        ids = self.objects.copy().keys()
+        for id in ids:
             if self.is_object_beyond_crosswalk(id):
                 self.remove_object(id)
 
@@ -55,14 +57,14 @@ class CentroidTracker:
         self.amount_of_vehicles[2] = self.amount_of_vehicles[1]
         self.amount_of_vehicles[1] = self.amount_of_vehicles[0]
         self.amount_of_vehicles[0] = self.next_id
-        
+
     def update_new_detections(self, boxes):
         input_centroids = np.zeros((len(boxes), 2), dtype="int")
 
         # Assign centroids to each bounding box
         for i in range(len(boxes)):
             input_centroids[i] = self.calculate_centroid(boxes[i])
-        
+
         # Each detection is assigned to a new id
         if len(self.objects) == 0:
             for i in range(len(boxes)):
@@ -70,13 +72,13 @@ class CentroidTracker:
 
         # Update based on distances between centroids
         self.update_centroids_dist(input_centroids, boxes)
-    
+
     def update_centroids_dist(self, input_centroids, input_boxes):
         # Getting the data about the existing objects
         object_ids = list(self.objects.keys())
         object_centroids = []
         for centroids in self.objects.values():
-            object_centroids.append(centroids[0])
+            object_centroids.append((centroids[0].get_centroid()[0], centroids[0].get_centroid()[1]))
 
         # Calculate the distance between each pair of existing and input centroids
         """
@@ -127,7 +129,7 @@ class CentroidTracker:
                     self.remove_object(object_ID)
         else:
             for col in unusedCols:
-                self.register_object(input_centroids[col], input_boxes[col])
+                self.register_object(input_boxes[col], input_centroids[col])
 
     def get_objects(self):
         return self.objects
@@ -138,7 +140,7 @@ class CentroidTracker:
         self.objects[object_id][0] = Detection(box, new_centroid)
 
     def is_object_beyond_crosswalk(self, object_id):
-        centroid = self.objects[object_id][0]
+        centroid = self.objects[object_id][0].get_centroid()
         # Checking if the vehicle has crossed the crosswalk
         if self.crosswalk.get_is_above():
             return self.line.is_point_above(math.Point(centroid[0], centroid[1]))
@@ -150,6 +152,7 @@ class CentroidTracker:
 
     def get_disappearances(self, object_id):
         return self.disappeared_objects[object_id]
+
 
 class Detection:
     def __init__(self, box, centroid=None):

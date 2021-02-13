@@ -21,8 +21,6 @@ class KinematicsCalculation(measurements.VehicleMeasure):
         if line is None:
             return 0
         (x, y) = KinematicsCalculation.choose_point(box, line, side)
-        print("POINT:")
-        print(x, y)
         point = geo.Point(x, y)
         # TODO: convert units from pixels to real distance
         return point.dist_from_line(line) / self.pixels_ratio
@@ -64,7 +62,6 @@ class KinematicsCalculation(measurements.VehicleMeasure):
             return None, None
         # The objects intersect, so that a part of the box is within the crosswalk
         elif x < crosswalk_min_x < x + width < crosswalk_max_x:
-            print("CHOSE LINE 1")
             return None, None
 
     @staticmethod
