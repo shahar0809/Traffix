@@ -35,14 +35,18 @@ class YoloDetector(detector.Detector):
     WEIGHTS_PATH = os.path.join(ROOT_DIR, 'yolo', 'yolov3.weights')
     LABELS_PATH = os.path.join(ROOT_DIR, 'yolo', 'coco.names')
 
-    # Net / Net parameters
-    net = None
-    layer_names = None
-    layer_outputs = None
-
-    def __init__(self, threshold, min_confidence):
-        super().__init__(threshold, min_confidence)
+    def __init__(self, threshold, min_confidence, tracker):
+        super().__init__(threshold, min_confidence, tracker)
         self.load_net()
+
+        # Net / Net parameters
+        self.net = None
+        self.layer_names = None
+        self.layer_outputs = None
+
+        self.classIDs = []
+        self.boxes = []
+        self.confidences = []
 
     def load_net(self):
         """
@@ -114,12 +118,9 @@ class YoloDetector(detector.Detector):
         idxs = cv2.dnn.NMSBoxes(self.boxes, self.confidences, self.min_confidence, self.threshold)
 
         # If no objects were detected, return the original frame
-        if len(boxes) == 0: return None, frame
+        if len(idxs) == 0: return None, frame
 
-        '''
-        for box_index in boxes.flatten():
-            frame = self.put_bounding_box(box_index, frame)
-        '''
+        self.tracker.update_objects(self.boxes)
 
         print("FINISHED")
-        return idxs, self.boxes, frame
+        return self.boxes, frame

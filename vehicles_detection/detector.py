@@ -48,7 +48,7 @@ class Detector:
     confidences = []
     classIDs = []
 
-    def __init__(self, threshold, min_confidence):
+    def __init__(self, threshold, min_confidence, tracker):
         """
         Initializes the detector with the input and output paths.
         :param `threshold`: Threshold when applying non-maxima suppression
@@ -59,6 +59,7 @@ class Detector:
         """
         self.threshold = threshold
         self.min_confidence = min_confidence
+        self.tracker = tracker
 
     def detect_objects(self, frame):
         raise NotImplementedError

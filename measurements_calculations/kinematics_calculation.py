@@ -17,7 +17,7 @@ class KinematicsCalculation(measurements.VehicleMeasure):
         :type box: list<(int, int)>
         :return: the distance from the box to the crosswalk in meters.
         """
-        line, side = self.choose_crosswalk_line(box)
+        line, side = self.choose_crosswalk_line(box, self.crosswalk)
         if line is None:
             return 0
         (x, y) = KinematicsCalculation.choose_point(box, line, side)
@@ -27,7 +27,8 @@ class KinematicsCalculation(measurements.VehicleMeasure):
         # TODO: convert units from pixels to real distance
         return point.dist_from_line(line) / self.pixels_ratio
 
-    def choose_crosswalk_line(self, box):
+    @staticmethod
+    def choose_crosswalk_line(box, crosswalk):
         """
         In order to calculate the shortest distance from the crosswalk, we need to choose the
         closest line to the bounding box. This function calculates what line is the closest.
@@ -40,7 +41,7 @@ class KinematicsCalculation(measurements.VehicleMeasure):
         (x, y) = (box[0], box[1])
         (width, height) = (box[2], box[3])
 
-        crosswalk_points = self.crosswalk.get_points()
+        crosswalk_points = crosswalk.get_points()
 
         # Define linear lines of the crosswalk
         crosswalk_line1 = geo.LinearLine.gen_line_from_points(crosswalk_points[0], crosswalk_points[2])
@@ -62,7 +63,7 @@ class KinematicsCalculation(measurements.VehicleMeasure):
         elif crosswalk_min_x < x < crosswalk_max_x:
             return None, None
         # The objects intersect, so that a part of the box is within the crosswalk
-        elif x < crosswalk_min_x < x + width< crosswalk_max_x:
+        elif x < crosswalk_min_x < x + width < crosswalk_max_x:
             print("CHOSE LINE 1")
             return None, None
 

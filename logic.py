@@ -9,6 +9,7 @@ import capture_video as cap
 import measurements_calculations.kinematics_calculation as kinematics
 import database.DB_Wrapper as database
 import utils
+import vehicles_detection.centroid_tracking as tracker
 
 
 class System:
@@ -19,15 +20,19 @@ class System:
         # Initializing the frames capturing module
         self.capture = cap.StaticCapture('traffic.mp4')
 
-        # Initializing the vehicle detection module
-        threshold = 0.3
-        confidence = 0.5
-        self.detector = yolo.YoloDetector(threshold, confidence)
-
         # Initializing database connection
         self.db = database.SqliteDatabase()
         camera = self.db.get_camera_details(camera_id)
         crosswalk = self.db.get_crosswalk_details(env_id)
+
+        # Initializing an object tracker
+        self.tracker = tracker.CentroidTracker(crosswalk)
+
+        # Initializing the vehicle detection module
+        threshold = 0.3
+        confidence = 0.5
+        self.detector = yolo.YoloDetector(threshold, confidence, tracker)
+
         # Initialize class to calculate measurements
         self.calculator = kinematics.KinematicsCalculation(camera, crosswalk)
 
@@ -55,33 +60,39 @@ class System:
         - Makes a decision
         :param frames: the group of 3 frames
         """
-        # Applying object detection on input frame
+        # Lists containing detection data for each frame
         boxes = []
         result_frames = []
         vehicles = []
-        idxs = []
+        vehicles_ids = []
 
+        # For each frame, apply object detection
         for i in range(cap.Capture.GROUP_SIZE):
-            ids, boxes_result, frame = self.apply_detection(frames[i])
-            idxs.append(ids)
+            boxes_result, frame = self.apply_detection(frames[i])
+            # Append results of the frame to the lists
             boxes.append(boxes_result)
-            result_frames += [frame]
+            result_frames.append(frame)
 
         # Applying measurements calculations
-        min_index = np.argmin(idxs)
-        for i in range(min_index):
-            vehicle_boxes = [boxes[0][i], boxes[1][i], boxes[2][i]]
-            vehicles.append(self.calculator.get_measurements(vehicle_boxes))
+        # Taking the frame with the least vehicles (can't calculate
+        min_index = min(max(vehicles_ids[j]) for j in range(cap.Capture.GROUP_SIZE))
+        objects = self.tracker.get_objects()
+        amount = self.tracker.get_amount_of_objects()
 
-
+        for object_id in range(amount[0]):
+            if self.tracker.get_disappearances(object_id) == 0:
+                appearances = objects[object_id]
+                vehicle_boxes = [appearances[0].get_box(),
+                                 appearances[1].get_box(),
+                                 appearances[2].get_box()]
+                vehicles.append(self.calculator.get_measurements(vehicle_boxes, object_id))
 
         # Putting the frame with the bounding boxes in the result queue
         self.result_queue.put(self.make_frame(vehicles, result_frames[1]))
 
     def apply_detection(self, frame):
-        idxs, boxes, frame = self.detector.detect_objects(frame)
-        idxs = idxs.flatten()
-        return idxs, boxes, frame
+        boxes, frame = self.detector.detect_objects(frame)
+        return boxes, frame
 
     @staticmethod
     def make_frame(vehicles, frame):
