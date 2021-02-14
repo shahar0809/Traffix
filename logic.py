@@ -1,7 +1,7 @@
 # Import necessary libraries
 import cv2 as cv
 import time
-import queue
+from queue import Queue
 import threading
 import _thread
 
@@ -12,12 +12,11 @@ import measurements_calculations.kinematics_calculation as kinematics
 import database.DB_Wrapper as db
 import utils
 
-frames_queue = queue.Queue()
-
 
 class System:
     def __init__(self, camera_id, env_id):
-        self.result_queue = queue.Queue()
+        self.result_queue = Queue()
+        self.frames_queue = Queue()
 
         # Initializing the frames capturing module
         self.capture = cap.StaticCapture('traffic.mp4')
@@ -35,47 +34,45 @@ class System:
         self.db = database.SqliteDatabase()
         camera = self.db.get_camera_details(camera_id)
         crosswalk = self.db.get_crosswalk_details(env_id)
-
         # Initialize class to calculate measurements
         self.calculator = kinematics.KinematicsCalculation(camera, crosswalk)
 
-        # Initialize a window to show frames
-        cv.namedWindow("Traffix", cv.WINDOW_NORMAL)
-
     def run(self):
         self.capture = cap.StaticCapture('traffic.mp4')
-        # Defining a daemon thread (background) to capture frames
-        capture_thread = threading.Thread(target=self.capture.capture_frames, name='capture', daemon=True)
-        # Defining a daemon thread (background) to retrieve frames
-        retrieve_frames_thread = threading.Thread(target=self.capture.get_frames, name='retrieve_frames', daemon=True)
-        # Defining a daemon thread (background) to display frames
-        show_frames_thread = threading.Thread(target=...)
+        self.capture.capture_frames(self.frames_queue)
 
-        # Starting threads
-        capture_thread.start()
-        retrieve_frames_thread.start()
-        try:
-            show_frames_thread.start()
+        while self.frames_queue.qsize() > 0:
+            frames = self.frames_queue.get()
+            self.handle_frames(frames)
 
-        except KeyboardInterrupt:
-            print("Traffix exited")
+            res_frame = self.result_queue.get()
+            cv.imshow('Traffix', res_frame)
 
-    def retrieve_frames(self):
-        while True:
-            time.sleep(0.5)
-            frames = self.capture.get_frames()
-            self.manage_frames(frames)
+            if cv.waitKey(1) & 0xFF == ord('q'):
+                break
 
-    def manage_frames(self, frames):
+        cv.destroyAllWindows()
+
+    def handle_frames(self, frames):
+        # Applying object detection on input frame
         boxes = []
-        # Getting bounding boxes
-        for i in range(3):
-            boxes[i], frames[i] = self.apply_detection(frames[i])
-
-        # Calculating measurements for each vehicle detected
+        result_frames = []
         vehicles = []
-        for i in range(3):
-            vehicles[i] = self.calculator.get_measurements(boxes[i][0], boxes[i][1], boxes[i][2])
+
+        for i in range(cap.Capture.GROUP_SIZE):
+            boxes_result, frame = self.apply_detection(frames[i])
+
+            boxes.append(boxes_result)
+            result_frames += [frame]
+
+        # Applying measurements calculations
+
+        max_size = min(len(boxes[0]), min(len(boxes[1]), len(boxes[2])))
+        for i in range(max_size):
+            vehicle_boxes = [boxes[0][i], boxes[1][i], boxes[2][i]]
+            vehicles.append(self.calculator.get_measurements(vehicle_boxes))
+
+        self.result_queue.put(self.make_frame(vehicles, result_frames[1]))
 
     def apply_detection(self, frame):
         # Init
@@ -106,31 +103,13 @@ class System:
         if self.result_queue.qsize() > 0:
             frame = self.result_queue.get()
 
-            cv.imshow("Traffix", frame)
-            cv.waitKey(0)
+    def make_frame(self, vehicles, frame):
+        for vehicle in vehicles:
+            frame = utils.put_bounding_box(frame, vehicle)
+        return frame
 
-            # Press Esc on keyboard to exit
-            if cv.waitKey(33) == 27:
-                _thread.interrupt_main()
 
 
 if __name__ == '__main__':
     sys = System(1, 1)
     sys.run()
-
-"""
-    m = kinematics.KinematicsCalculation(None, crosswalk)
-    boxes, frame = detector.detect_objects(frame1)
-
-    for box_index in boxes.flatten():
-        dist = m.calc_distance(detector.boxes[box_index])
-        utils.draw_shape(crosswalk, frame)
-        
-
-        frame = detector.put_bounding_box(box_index, frame, dist)
-        # Saving image
-        cv.imwrite("result.jpg", frame)
-        # Showing image
-        cv.imshow('Traffix', frame)
-        cv.waitKey(0)
-"""

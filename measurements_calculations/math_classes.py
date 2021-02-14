@@ -1,4 +1,5 @@
 import numpy as np
+import math
 DELIMITER = ','
 
 
@@ -17,8 +18,8 @@ class Point:
         return 'x=' + str(self.x) + ', y=' + str(self.y)
 
     def distance(self, target):
-        x_diff = target.x - self.x
-        y_diff = target.y - self.y
+        x_diff = target.get_x() - self.x
+        y_diff = target.get_y() - self.y
         dist = np.math.sqrt(x_diff ** 2 + y_diff ** 2)
         return dist
 
@@ -43,8 +44,8 @@ class Point:
     def to_string(crosswalk_points):
         x = str(crosswalk_points[0])
         y = str(crosswalk_points[1])
-        a = [x, y]
-        return DELIMITER.join(a)
+        point = [x, y]
+        return DELIMITER.join(point)
 
     @staticmethod
     def to_point(parsed):
@@ -65,8 +66,8 @@ class LinearLine:
 
     @staticmethod
     def gen_line_from_points(p1, p2):
-        p1 = Point(p1[0], p1[1])
-        p2 = Point(p2[0], p2[1])
+        p1 = Point(p1.get_x(), p1.get_y())
+        p2 = Point(p2.get_x(), p2.get_y())
         slope = p2.slope(p1)
         bias = p1.get_y() - slope * p1.get_x()
         line = LinearLine(slope, bias)

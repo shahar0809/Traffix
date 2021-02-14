@@ -114,7 +114,7 @@ class YoloDetector(detector.Detector):
         boxes = cv2.dnn.NMSBoxes(self.boxes, self.confidences, self.min_confidence, self.threshold)
 
         # If no objects were detected, return the original frame
-        if len(boxes) == 0: return frame
+        if len(boxes) == 0: return None, frame
 
         '''
         for box_index in boxes.flatten():
@@ -122,4 +122,4 @@ class YoloDetector(detector.Detector):
         '''
 
         print("FINISHED")
-        return boxes, frame
+        return self.boxes, frame

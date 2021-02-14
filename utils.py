@@ -149,10 +149,6 @@ class CaptureCrosswalk:
             elif key == ord("c"):
                 return self.crosswalk
 
-        if len(self.crosswalk) == 4:
-            return
-    """
-
 
 def draw_shape(shape, frame):
     # Setting color and thickness of the lines drawn
@@ -168,11 +164,11 @@ def draw_shape(shape, frame):
     return frame
 
 
-def put_bounding_box(self, frame, vehicle):
+def put_bounding_box(frame, vehicle):
     box = vehicle.get_box()
     # Extract the bounding box coordinates
-    (x, y) = (self.box[0], self.box[1])
-    (w, h) = (self.box[2], self.box[3])
+    (x, y) = (box[0], box[1])
+    (w, h) = (box[2], box[3])
 
     # Get the color of the label detected
     color = [0, 0, 255]
@@ -184,4 +180,4 @@ def put_bounding_box(self, frame, vehicle):
            str('%.2f' % vehicle.get_acceleration())
 
     cv.putText(frame, text, (x, y - 5), cv.FONT_HERSHEY_SIMPLEX, 0.4, color, 1)
-    return frame"""
+    return frame
