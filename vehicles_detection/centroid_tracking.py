@@ -47,12 +47,6 @@ class CentroidTracker:
         # Objects were detected
         self.update_new_detections(boxes)
 
-        # Removing objects that crossed the crosswalk
-        ids = self.objects.copy().keys()
-        for id in ids:
-            if self.is_object_beyond_crosswalk(id):
-                self.remove_object(id)
-
         # Update amount of object
         self.amount_of_vehicles[2] = self.amount_of_vehicles[1]
         self.amount_of_vehicles[1] = self.amount_of_vehicles[0]

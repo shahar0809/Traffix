@@ -53,13 +53,11 @@ class CameraDetails:
 
 
 class CrosswalkDetails:
-    def __init__(self, points, width, length, above):
-        self.points = []
-        for point in points:
-            self.points += [geo.Point(point[0], point[1])]
+    def __init__(self, points, width, length, above=True):
+        self.points = points
         self.width = width
         self.length = length
-        self.is_above = above
+        self.is_above = False
 
     def get_points(self):
         return self.points

@@ -4,8 +4,8 @@ DELIMITER = ','
 
 class Point:
     def __init__(self, init_x, init_y):
-        self.x = init_x
-        self.y = init_y
+        self.x = -init_x
+        self.y = -init_y
 
     def get_x(self):
         return self.x
@@ -49,11 +49,15 @@ class Point:
     @staticmethod
     def to_point(parsed):
         parsed = parsed.split(DELIMITER)
-        return int(parsed[0]), int(parsed[1])
+        return Point(int(parsed[0]), int(parsed[1]))
         
 
 class LinearLine:
     def __init__(self, init_slope, init_bias):
+        """
+        :type init_slope: int
+        :type init_bias: int
+        """
         self.slope = init_slope
         self.bias = init_bias
 
@@ -65,10 +69,8 @@ class LinearLine:
 
     @staticmethod
     def gen_line_from_points(p1, p2):
-        p1 = Point(p1.get_x(), p1.get_y())
-        p2 = Point(p2.get_x(), p2.get_y())
         slope = p2.slope(p1)
-        bias = p1.get_y() - slope * p1.get_x()
+        bias = p1.get_y() - (slope * p1.get_x())
         line = LinearLine(slope, bias)
         return line
 
@@ -91,4 +93,4 @@ class LinearLine:
         return self.calc_x_value(y_range[0]) > other.calc_x_value(y_range[0])
 
     def is_point_above(self, point):
-        return self.calc_y_value(point.get_x()) > point.get_y()
+        return -abs(self.calc_y_value(point.get_x())) < point.get_y()

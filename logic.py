@@ -27,11 +27,11 @@ class System:
         # self.db.add_crosswalk_details(crosswalk_points)
 
         # Initializing database connection
-        camera = self.db.get_camera_details(camera_id)
-        crosswalk = self.db.get_crosswalk_details(env_id)
+        self.camera = self.db.get_camera_details(camera_id)
+        self.crosswalk = self.db.get_crosswalk_details(env_id)
 
         # Initializing an object tracker
-        self.tracker = tracker.CentroidTracker(crosswalk)
+        self.tracker = tracker.CentroidTracker(self.crosswalk)
 
         # Initializing the vehicle detection module
         threshold = 0.3
@@ -39,10 +39,10 @@ class System:
         self.detector = yolo.YoloDetector(threshold, confidence, self.tracker)
 
         # Initialize class to calculate measurements
-        self.calculator = kinematics.KinematicsCalculation(camera, crosswalk)
+        self.calculator = kinematics.KinematicsCalculation(self.camera, self.crosswalk)
 
         # Initializing a decision maker
-        self.decision_maker = decision_making.DecisionMaker(camera, crosswalk, [32.793542374788785, 34.98896391998108])
+        self.decision_maker = decision_making.DecisionMaker(self.camera, self.crosswalk, [32.793542374788785, 34.98896391998108])
 
         self.crosswalk_mark = utils.CaptureCrosswalk()
 
@@ -53,6 +53,8 @@ class System:
         self.frames_queue.get()
         crosswalk_points = self.crosswalk_mark.get_crosswalk(self.frames_queue.get()[0])
         print(crosswalk_points)
+
+        #crosswalk2 = utils.CrosswalkDetails(crosswalk_points, self.crosswalk.get_width(),self.crosswalk.get_length())
 
         while self.frames_queue.qsize() > 0:
             frames = self.frames_queue.get()

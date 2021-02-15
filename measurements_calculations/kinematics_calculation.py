@@ -10,7 +10,7 @@ class KinematicsCalculation(measurements.VehicleMeasure):
     def __init__(self, camera, crosswalk):
         super().__init__(camera, crosswalk)
 
-    def calc_distance(self, box):
+    def calc_distance2(self, box):
         """
         Calculates the distance of a vehicle detected (bounding box format) to the crosswalk (4 points).
         :param box: The bounding box of the vehicle detected.
@@ -94,3 +94,32 @@ class KinematicsCalculation(measurements.VehicleMeasure):
     def calc_acceleration(self, box1, box2, box3, duration):
         velocity_diff = self.calc_velocity(box2, box3, duration) - self.calc_velocity(box1, box2, duration)
         return velocity_diff / (1 / self.camera_details.get_fps())
+
+    def calc_distance(self, box):
+        crosswalk_points = self.crosswalk.get_points()
+
+        line1 = geo.LinearLine.gen_line_from_points(crosswalk_points[0], crosswalk_points[1])
+        line2 = geo.LinearLine.gen_line_from_points(crosswalk_points[2], crosswalk_points[3])
+
+        dist1 = []
+        dist2 = []
+        x_start, y_start, width, length = box[0], box[1], box[2], box[3]
+        box_points = [(x_start, y_start), (x_start + width, y_start),
+                      (x_start, y_start + length), (x_start + width, y_start + length)]
+
+        for point in box_points:
+            point_obj = geo.Point(point[0], point[1])
+
+            if line1.is_point_above(point_obj) and self.crosswalk.get_is_above():
+                dist1.append(0)
+            elif not line1.is_point_above(point_obj) and not self.crosswalk.get_is_above():
+                dist1.append(0)
+
+            else:
+                dist1.append(point_obj.dist_from_line(line1))
+                dist2.append(point_obj.dist_from_line(line2))
+
+        if len(dist2) == 0:
+            return min(dist1) / self.pixels_ratio
+        else:
+            return min(min(dist1), min(dist2)) / self.pixels_ratio
