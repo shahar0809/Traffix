@@ -221,7 +221,7 @@ class SqliteDatabase(IDatabase):
             cursor.close()
             return e
 
-    def set_crosswalk_details(self, crosswalk_points, crosswalk_id):
+    def set_crosswalk_details(self, crosswalk_points, env_id):
         """
         insert to the table cameras details
         :param crosswalk_points: A list of the information we want to update to.
@@ -231,10 +231,10 @@ class SqliteDatabase(IDatabase):
         crosswalk_points = [Point.to_string(crosswalk_points[i]) for i in range(4)]
         cursor = self.conn.cursor()
         # update crosswalk details
-        sql_update = "UPDATE environments SET crosswalk_point_1 = ?, crosswalk_point_2 = ?, crosswalk_point_3 = ?, crosswalk_point_4 = ? WHERE env_id = ?"
+        sql_update = "UPDATE environments SET crosswalk_point_1 = ?, crosswalk_point_2 = ?, crosswalk_point_3 = ?, crosswalk_point_4 = ? WHERE id = ?"
 
         try:
-            cursor.execute(sql_update, (crosswalk_points[0], crosswalk_points[1], crosswalk_points[2], crosswalk_points[3], crosswalk_id))
+            cursor.execute(sql_update, (crosswalk_points[0], crosswalk_points[1], crosswalk_points[2], crosswalk_points[3], env_id))
             self.conn.commit()
             cursor.close()
             return True

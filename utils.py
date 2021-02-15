@@ -82,13 +82,17 @@ class CrosswalkDetails:
 
 
 class Environment:
-    def __init__(self, env_id, camera_id, crosswalk_points, bars, width, length):
+    def __init__(self, env_id, camera_id, crosswalk_points, bars, width, length, location):
         self.camera_id = camera_id
         self.bars = bars
         self.crosswalk_points = crosswalk_points
         self.environment_id = env_id
         self.width = width
         self.length = length
+        self.location = location
+
+    def get_location(self):
+        return self.location
 
     def get_environment_id(self):
         return self.environment_id
@@ -135,6 +139,7 @@ class CaptureCrosswalk:
             self.crosswalk += [(x, y)]
 
     def get_crosswalk(self, frame):
+        print("NOTE: Mark the line closest to the traffic direction first")
         print("Press c to send the crosswalk marked")
         print("Press r to reset the crosswalk markings")
 

@@ -108,9 +108,12 @@ class StaticCapture(Capture):
         return cv2.VideoCapture(self.video_path)
 
 
-def user_interaction():
+def user_interaction(video_path=None):
     STORED_VIDEO = 1
     LIVE_FOOTAGE = 2
+
+    if video_path is not None:
+        return StaticCapture(video_path)
 
     print("Choose an option")
     print(str(STORED_VIDEO) + " - To play a specific video")
