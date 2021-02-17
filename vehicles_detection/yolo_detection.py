@@ -125,5 +125,5 @@ class YoloDetector(detector.Detector):
             nms_boxes.append(self.boxes[i])
         self.boxes = nms_boxes
         self.tracker.update_objects(self.boxes)
-
+        print(self.boxes)
         return self.boxes, frame
