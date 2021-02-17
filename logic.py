@@ -14,6 +14,20 @@ import decision_making.decision_making as decision_making
 
 class System:
     def __init__(self, camera_id, env_id, video_path=None):
+        """
+        An initializer to the System object. Initializes all the components and modules that the logic unit uses:
+        * Objects detection
+        * Objects tracking
+        * Measurements calculation
+        * Database
+        * Decision making
+        :param camera_id: The ID (in the db) of the video source.
+        :type camera_id: int
+        :param env_id: The ID (in the db) of the environment.
+        :type env_id: int
+        :param video_path:
+        :type video_path: str
+        """
         self.result_queue = Queue()
         self.frames_queue = Queue()
 
@@ -54,6 +68,10 @@ class System:
         self.decision_maker = decision_making.DecisionMaker(self.camera, self.crosswalk, [32.793542374788785, 34.98896391998108])
 
     def run(self):
+        """
+        Manages the order of the operations, and manages the queues in the program.
+        :return: None
+        """
         self.capture.capture_frames(self.frames_queue)
 
         while self.frames_queue.qsize() > 0:
@@ -105,15 +123,19 @@ class System:
             except KeyError:
                 pass
             else:
+                # Checking that the object is in the frame
                 if disappearances == 0:
                     appearances = objects[object_id]
                     if appearances[0] is None or appearances[1] is None or appearances[2] is None:
                         continue
+                    # Getting the boxes of the vehicle in the last 3 frames
                     vehicle_boxes = [appearances[0].get_box(),
                                      appearances[1].get_box(),
                                      appearances[2].get_box()]
+                    # The box that will be shown in the frame is the "middle" one
+                    # since the measurements calculation is based on the previous and next data
                     boxes_on_frame.append(appearances[1].get_box())
-
+                    # Adding the calculations of the vehicle to the frame's vehicles list
                     vehicles.append(self.calculator.get_measurements(vehicle_boxes, object_id))
 
         # Putting the frame with the bounding boxes in the result queue
@@ -121,6 +143,14 @@ class System:
         self.result_queue.put((self.make_frame(vehicles, result_frames[1]), decision))
 
     def apply_detection(self, frame):
+        """
+        Applies YOLO vehicle detection on a single frame.
+        :param frame: The frame to apply detection on
+        :type frame: image (OpenCV object)
+        :return: The bounding boxes detected by the machine, and the frame with the bounding boxes
+        drawn over it.
+        :rtype: list<Box object>, Image(OpenCV object)
+        """
         boxes, frame = self.detector.detect_objects(frame)
         return boxes, frame
 

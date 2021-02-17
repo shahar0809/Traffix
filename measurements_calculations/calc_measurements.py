@@ -49,21 +49,19 @@ class VehicleMeasure:
         Returns the measurements of each vehicle detected (as the Vehicle class).
         :return: Vehicle
         """
+
+        print("ID: " + str(object_id))
         box1 = boxes[0]
         box2 = boxes[1]
         box3 = boxes[2]
 
         # Calculating distances of all boxes
-        dist1 = self.calc_distance(box1)
         dist2 = self.calc_distance(box2)
-        dist3 = self.calc_distance(box3)
 
         # Calculate velocity
         velocity1_2 = self.calc_velocity(box1, box2, 1 / self.camera_details.get_fps())
-        velocity2_3 = self.calc_velocity(box2, box3, 1 / self.camera_details.get_fps())
 
         # Calculate acceleration
         acceleration = self.calc_acceleration(box1, box2, box3, 1 / self.camera_details.get_fps())
 
         return utils.Vehicle(box2, object_id, dist2, velocity1_2, acceleration)
-
