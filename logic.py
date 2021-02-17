@@ -65,7 +65,7 @@ class System:
         self.calculator = kinematics.KinematicsCalculation(self.camera, self.crosswalk)
 
         # Initializing a decision maker
-        self.decision_maker = decision_making.DecisionMaker(self.camera, self.crosswalk, [32.793542374788785, 34.98896391998108])
+        self.decision_maker = decision_making.DecisionMaker(self.camera, [32.793542374788785, 34.98896391998108])
 
     def run(self):
         """
@@ -73,6 +73,9 @@ class System:
         :return: None
         """
         self.capture.capture_frames(self.frames_queue)
+
+        for i in range(1500):
+            self.frames_queue.get()
 
         while self.frames_queue.qsize() > 0:
             frames = self.frames_queue.get()
@@ -139,7 +142,7 @@ class System:
                     vehicles.append(self.calculator.get_measurements(vehicle_boxes, object_id))
 
         # Putting the frame with the bounding boxes in the result queue
-        decision = self.decision_maker.make_decision(boxes_on_frame)
+        decision = self.decision_maker.make_decision(vehicles)
         self.result_queue.put((self.make_frame(vehicles, result_frames[1]), decision))
 
     def apply_detection(self, frame):

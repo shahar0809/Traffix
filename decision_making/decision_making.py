@@ -1,8 +1,9 @@
 import measurements_calculations.kinematics_calculation as kinematics
 import cmath
-import database.DB_Wrapper as db
 import decision_making.weather_wrapper as weather_wrapper
-import random
+
+crosswalk = 0
+
 
 HIGH_LEVEL = 3
 MID_LEVEL = 2
@@ -13,12 +14,6 @@ class Decision:
     def __init__(self, camera, location):
         self.duration = 1 / camera.get_fps()
         self.location = location
-
-    def get_traffic_level_from_database(self):
-        raise NotImplementedError
-
-    def get_fps_from_database(self):
-        raise NotImplementedError
 
     def distance_change(self):
         raise NotImplementedError
@@ -34,43 +29,10 @@ class Decision:
 
 
 class DecisionMaker(Decision):
-    def __init__(self, camera, crosswalk, location):
+    def __init__(self, camera, location):
         super().__init__(camera, location)
-        self.calculator = kinematics.KinematicsCalculation(camera, crosswalk)
 
-    # Not necessary :(
-    def get_traffic_level_from_database(self):
-        """
-        The function asking the day and the hour which the user want the traffic level.
-        The function will ask the user for the day and the hour of the loads from which he wants the traffic level
-        to returned to the user the level.
-        :return: traffic level
-        """
-        database = db.SqliteDatabase()
-        try:
-            day = int(input("Please enter a day from which you want the traffic level"))
-            hour = int(input("Please enter a hour from which you want the traffic level"))
-            return database.get_traffic_data(day, hour)
-
-        except Exception as e:
-            return e
-
-    # Not necessary :(
-    def get_fps_from_database(self):
-        """
-        The function will ask the user for the id of the camera from which he wants the fps
-        to returned to the user the fps.
-        :return: fps
-        """
-        database = db.SqliteDatabase()
-        try:
-            camera_id = int(input("Please enter a id from which you want the fps"))
-            return database.get_camera_details(camera_id)
-
-        except Exception as e:
-            return e
-
-    # TODO: this function doesn't get the weather - it changes the distance basedd on the weather
+    # TODO: this function doesn't get the weather - it changes the distance based on the weather
     # so change the name so that it fits
     # Also - it doesn't look at one car - it looks at the weather, and if it's risky, changes
     # the distance of all vehicles. The return should be a value that's put into all distances.
@@ -85,11 +47,9 @@ class DecisionMaker(Decision):
         :rtype: float
         """
         weather_data = weather_wrapper.WeatherAPI(self.location)
-        weather_wrapper = weather_wrapper.WeatherWrapper(weather_data)
-        total = weather_wrapper.process_weather()
-        dist = abs(self.calculator.calc_distance(box) * total / 5)
-
-        return dist
+        weather = weather_wrapper.WeatherWrapper(weather_data)
+        total = weather.process_weather()
+        return total
 
     def calculate_time(self, distance, velocity, acceleration):
         """
@@ -117,26 +77,18 @@ class DecisionMaker(Decision):
             x2 = (-b - disc) / (2 * a)
             return x1.real, x2.real
 
-    def make_decision(self, boxes):
+    def make_decision(self, vehicles):
         """
         The function makes a decision for vehicles based on environment variables.
-        :param boxes: The bounding boxes of the vehicle detected in the group of frames.
-        :param duration: The fps from the camera details.
+        :param vehicles: list of vehicles.
         :return: The decision - Is it safe to cross or not
         """
-        # TODO: this needs to look at ALL vehicles in the frame. You only looked at one
-        """
-        dist, velocity, acceleration = self.calculator.get_measurements(boxes)
-        distance = self.get_weather(dist, box, m)
 
-        calc = decision.calculate_time(distance, velocity, acceleration)
-        if calc[0] < 20 or calc[1] < 20:
-            return True
-        else:
-            return False
-        """
-        # Random for now just so that it would run
-        return bool(random.getrandbits(1))
+        for vehicle in vehicles:
+            decision = self.make_decision_for_vehicle(vehicle)
+            if decision is not None and not decision:
+                return False
+        return True
 
     def make_decision_for_vehicle(self, vehicle):
         """
@@ -144,12 +96,21 @@ class DecisionMaker(Decision):
         :param: vehicle: Object that will contain box and the distance, the velocity and the acceleration.
         :return: The decision - who to stop and who to let go.
         """
-        #TODO: This needs to take care of ONE vehicle
 
-        decision = Decision()
+        # Case in which the vehicle passed the crosswalk
+        if vehicle.distance < 0:
+            return True
 
-        calc = decision.calculate_time(vehicle.distance, vehicle.velocity, vehicle.acceleration)
-        if calc[0] < 20 or calc[1] < 20:
+        # Case in which the vehicle is on the crosswalk
+        if vehicle.distance == 0:
+            return False
+
+        try:
+            calc = self.calculate_time(vehicle.distance, vehicle.velocity, vehicle.acceleration)
+        except ZeroDivisionError:
+            return None
+
+        if (0 < calc[0] < 20) or (0 < calc[1] < 20):
             return True
         else:
             return False
