@@ -1,5 +1,4 @@
 import numpy as np
-import math
 DELIMITER = ','
 
 
@@ -91,7 +90,5 @@ class LinearLine:
 
         return self.calc_x_value(y_range[0]) > other.calc_x_value(y_range[0])
 
-
-
-
-
+    def is_point_above(self, point):
+        return self.calc_y_value(point.get_x()) > point.get_y()

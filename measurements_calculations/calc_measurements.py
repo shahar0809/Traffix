@@ -44,7 +44,7 @@ class VehicleMeasure:
     def calc_acceleration(self, box1, box2, box3, duration):
         raise NotImplementedError
 
-    def get_measurements(self, boxes):
+    def get_measurements(self, boxes, object_id):
         """
         Returns the measurements of each vehicle detected (as the Vehicle class).
         :return: Vehicle
@@ -65,5 +65,5 @@ class VehicleMeasure:
         # Calculate acceleration
         acceleration = self.calc_acceleration(box1, box2, box3, 1 / self.camera_details.get_fps())
 
-        return utils.Vehicle(box2, dist2, velocity1_2, acceleration)
+        return utils.Vehicle(box2, object_id, dist2, velocity1_2, acceleration)
 

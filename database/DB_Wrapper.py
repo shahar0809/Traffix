@@ -172,7 +172,9 @@ class SqliteDatabase(IDatabase):
                 crosswalk_points += [Point.to_point(row[i])]
             width = row[4]
             length = row[5]
-            return utils.CrosswalkDetails(crosswalk_points, width, length)
+            # TODO: Add attribute of crosswalk (is_above) to db and everything related
+            # TODO: it will be inputted from user when we buld the GUI
+            return utils.CrosswalkDetails(crosswalk_points, width, length, False)
 
     def get_environment(self, env_id):
         """

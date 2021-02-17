@@ -8,8 +8,12 @@
     <content url="file://$MODULE_DIR$">
       <excludeFolder url="file://$MODULE_DIR$/venv" />
     </content>
+<<<<<<< HEAD
     <orderEntry type="jdk" jdkName="Python 3.8 (traffix) (2)" jdkType="Python SDK" />
 >>>>>>> ac21c1d798fd66b991c0b71225dc18e7e2e440ae
+=======
+    <orderEntry type="inheritedJdk" />
+>>>>>>> b6f65d66e598d998596d1ea28f2d98cfbc58813e
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="PyDocumentationSettings">

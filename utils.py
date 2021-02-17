@@ -1,5 +1,6 @@
 import measurements_calculations.math_classes as geo
-import cv2 as cv
+import cv2
+import vehicles_detection.centroid_tracking as tracker
 
 # Indices
 LOW_BAR = 0
@@ -13,11 +14,15 @@ HIGH_LEVEL = 2
 
 
 class Vehicle:
-    def __init__(self, box, distance, velocity, acceleration):
+    def __init__(self, box, id, distance, velocity, acceleration):
         self.distance = distance
         self.velocity = velocity
         self.acceleration = acceleration
         self.box = box
+        self.id = id
+
+    def get_id(self):
+        return self.id
 
     def get_box(self):
         return self.box
@@ -48,12 +53,13 @@ class CameraDetails:
 
 
 class CrosswalkDetails:
-    def __init__(self, points, width, length):
+    def __init__(self, points, width, length, above):
         self.points = []
         for point in points:
             self.points += [geo.Point(point[0], point[1])]
         self.width = width
         self.length = length
+        self.is_above = above
 
     def get_points(self):
         return self.points
@@ -72,6 +78,9 @@ class CrosswalkDetails:
 
     def get_length(self):
         return self.length
+
+    def get_is_above(self):
+        return self.is_above
 
 
 class Environment:
@@ -123,8 +132,8 @@ class CaptureCrosswalk:
         self.image = None
 
     def capture_mouse_click(self, event, x, y, flags, param):
-        if event == cv.EVENT_LBUTTONDOWN:
-            self.image = cv.circle(self.image, (x, y), radius=3, color=(255, 0, 0), thickness=-2)
+        if event == cv2.EVENT_LBUTTONDOWN:
+            self.image = cv2.circle(self.image, (x, y), radius=3, color=(255, 0, 0), thickness=2)
             self.crosswalk += [(x, y)]
 
     def get_crosswalk(self, frame):
@@ -133,20 +142,21 @@ class CaptureCrosswalk:
 
         clone = frame.copy()
         self.image = frame
-        cv.namedWindow("Traffix")
-        cv.setMouseCallback("Traffix", self.capture_mouse_click)
+        cv2.namedWindow("Traffix")
+        cv2.setMouseCallback("Traffix", self.capture_mouse_click)
 
         # Keep looping until the 'c' key is pressed
         while True:
             # Display the image and wait for a keypress
-            cv.imshow("Traffix", self.image)
-            key = cv.waitKey(1) & 0xFF
+            cv2.imshow("Traffix", self.image)
+            key = cv2.waitKey(1) & 0xFF
             # If the 'r' key is pressed, reset the cropping region
             if key == ord("r"):
                 self.image = clone.copy()
                 self.crosswalk = []
             # If the 'c' key is pressed, break from the loop
             elif key == ord("c"):
+                cv2.destroyAllWindows()
                 return self.crosswalk
 
 
@@ -156,10 +166,10 @@ def draw_shape(shape, frame):
     thickness = 1
 
     # Drawing each line of the shape
-    frame = cv.line(frame, shape[0], shape[1], color, thickness)
-    frame = cv.line(frame, shape[1], shape[2], color, thickness)
-    frame = cv.line(frame, shape[2], shape[3], color, thickness)
-    frame = cv.line(frame, shape[3], shape[0], color, thickness)
+    frame = cv2.line(frame, shape[0], shape[1], color, thickness)
+    frame = cv2.line(frame, shape[1], shape[2], color, thickness)
+    frame = cv2.line(frame, shape[2], shape[3], color, thickness)
+    frame = cv2.line(frame, shape[3], shape[0], color, thickness)
 
     return frame
 
@@ -173,11 +183,11 @@ def put_bounding_box(frame, vehicle):
     # Get the color of the label detected
     color = [0, 0, 255]
     # Create a rectangle according to the bounding box's coordinates
-    cv.rectangle(frame, (x, y), (x + w, y + h), color, 1)
+    cv2.rectangle(frame, (x, y), (x + w, y + h), color, 1)
 
-    text = str('%.2f' % vehicle.get_distance()) + \
-           str('%.2f' % vehicle.get_velocity()) + \
-           str('%.2f' % vehicle.get_acceleration())
+    text = str(vehicle.get_id()) + ": " +\
+        str('%.2f' % vehicle.get_distance())
 
-    cv.putText(frame, text, (x, y - 5), cv.FONT_HERSHEY_SIMPLEX, 0.4, color, 1)
+    cv2.putText(frame, text, (x, y - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.4, color, 1)
+    frame = cv2.circle(frame, tracker.CentroidTracker.calculate_centroid(box), radius=2, color=(0, 100, 200), thickness=2)
     return frame

@@ -35,13 +35,17 @@ class YoloDetector(detector.Detector):
     WEIGHTS_PATH = os.path.join(ROOT_DIR, 'yolo', 'yolov3.weights')
     LABELS_PATH = os.path.join(ROOT_DIR, 'yolo', 'coco.names')
 
-    # Net / Net parameters
-    net = None
-    layer_names = None
-    layer_outputs = None
+    def __init__(self, threshold, min_confidence, tracker):
+        # Net / Net parameters
+        self.net = None
+        self.layer_names = None
+        self.layer_outputs = None
 
-    def __init__(self, threshold, min_confidence):
-        super().__init__(threshold, min_confidence)
+        self.classIDs = []
+        self.boxes = []
+        self.confidences = []
+
+        super().__init__(threshold, min_confidence, tracker)
         self.load_net()
 
     def load_net(self):
@@ -111,15 +115,15 @@ class YoloDetector(detector.Detector):
         self.init_lists()
 
         # Apply non-maxima suppression to suppress weak, overlapping bounding boxes
-        boxes = cv2.dnn.NMSBoxes(self.boxes, self.confidences, self.min_confidence, self.threshold)
+        idxs = cv2.dnn.NMSBoxes(self.boxes, self.confidences, self.min_confidence, self.threshold)
 
         # If no objects were detected, return the original frame
-        if len(boxes) == 0: return None, frame
+        if len(idxs) == 0: return None, frame
 
-        '''
-        for box_index in boxes.flatten():
-            frame = self.put_bounding_box(box_index, frame)
-        '''
+        nms_boxes = []
+        for i in idxs.flatten():
+            nms_boxes.append(self.boxes[i])
+        self.boxes = nms_boxes
+        self.tracker.update_objects(self.boxes)
 
-        print("FINISHED")
         return self.boxes, frame
