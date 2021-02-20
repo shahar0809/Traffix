@@ -82,20 +82,16 @@ class CrosswalkDetails:
 
 
 class Environment:
-    def __init__(self, env_id, camera_id, crosswalk_points, bars, width, length, location):
+    def __init__(self, camera_id, crosswalk_points, bars, width, length, location):
         self.camera_id = camera_id
         self.bars = bars
         self.crosswalk_points = crosswalk_points
-        self.environment_id = env_id
         self.width = width
         self.length = length
         self.location = location
 
     def get_location(self):
         return self.location
-
-    def get_environment_id(self):
-        return self.environment_id
 
     def get_camera_id(self):
         return self.camera_id
