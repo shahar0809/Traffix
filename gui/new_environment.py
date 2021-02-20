@@ -1,7 +1,9 @@
 import tkinter as tk
+from gui import choose_camera, mark_crosswalk, set_traffic_bars, choose_location
 
 class NewEnvironment(tk.Frame):
     def __init__(self, parent, controller):
+        self.controller = controller
         tk.Frame.__init__(self, parent)
 
         # Camera section
@@ -31,13 +33,13 @@ class NewEnvironment(tk.Frame):
         location_button.pack()
 
     def open_choose_camera(self):
-        pass
+        self.controller.show_frame(choose_camera.ChooseCamera)
 
     def open_mark_crosswalk(self):
-        pass
+        self.controller.show_frame(mark_crosswalk.MarkCrosswalk)
 
     def open_traffic_bars(self):
-        pass
+        self.controller.show_frame(set_traffic_bars.SetTrafficBars)
 
     def open_choose_location(self):
-        pass
+        self.controller.show_frame(choose_location.ChooseLocation)
