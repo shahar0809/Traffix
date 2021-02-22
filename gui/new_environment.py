@@ -1,10 +1,10 @@
 import tkinter as tk
 from gui import choose_camera, mark_crosswalk, set_traffic_bars, choose_location
 from utils import Environment
-import gui.screen as Screen
+import gui.screen as screen
 
 
-class NewEnvironment(Screen):
+class NewEnvironment(screen.Screen):
     def __init__(self, parent, controller):
         super().__init__(parent, controller)
 

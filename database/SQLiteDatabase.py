@@ -276,7 +276,3 @@ class SQLiteDatabase(IDatabase):
         except sqlite3.Error as e:
             cursor.close()
             return e
-
-
-if __name__ == '__main__':
-    main()
