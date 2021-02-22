@@ -1,7 +1,18 @@
 import tkinter as tk
+import gui.screen as Screen
+from utils import CameraDetails as CameraDetails
 
-class NewCamera(tk.Frame):
+class NewCamera(Screen):
     def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
+        super().__init__(parent, controller)
 
-        # Continue adding elements here...
+        tk.Label(text="New camera").config(font=("Courier", 44)).pack()
+        tk.Label(text="Frames per second").config(font=("Courier", 20)).pack()
+        self.fps_box = tk.Entry(text="30").config(font=("Courier", 20))
+        self.fps_box.pack()
+
+        tk.Button(text="Done", command=self.register_camera).config(font=("Courier", 30)).pack()
+
+    def register_camera(self):
+        camera = CameraDetails(int(self.fps_box.get()))
+        self.controller.data["CAMERA"] = camera

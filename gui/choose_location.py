@@ -1,6 +1,7 @@
 import tkinter as tk
+import gui.screen as Screen
 
-class ChooseLocation(tk.Frame):
+class ChooseLocation(Screen):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
 

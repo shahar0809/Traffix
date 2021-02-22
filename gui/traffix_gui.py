@@ -26,14 +26,26 @@ class TraffixGUI(tk.Tk):
         container.grid_columnconfigure(0, weight=1)
 
         self.frames = {}
+        self.data = {}
 
         for window_name in windows.keys():
             frame = windows[window_name](container, self)
             self.frames[windows[window_name]] = frame
             frame.grid(row=0, column=0, sticky="nsew")
 
-        self.show_frame(windows["HOME"])
+        self.show_frame(windows["NEW_ENV"])
+
+    def open_frame(self, cont):
+        frame = self.frames[cont]
+        frame.tkraise()
 
     def show_frame(self, cont):
         frame = self.frames[cont]
-        frame.tkraise()
+        frame.deiconify()
+
+def main():
+    app = TraffixGUI()
+
+
+if __name__ == '__main__':
+    main()

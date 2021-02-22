@@ -38,9 +38,9 @@ class Vehicle:
 
 
 class CameraDetails:
-    def __init__(self, camera_id, fps):
+    def __init__(self, fps, id=None):
         self.fps = fps
-        self.camera_id = camera_id
+        self.id = id
 
     def set_fps(self, fps):
         self.fps = fps
@@ -49,15 +49,18 @@ class CameraDetails:
         return self.fps
 
     def get_id(self):
-        return self.camera_id
+        if id is None:
+            raise KeyError
+        else:
+            return self.id
 
 
 class CrosswalkDetails:
-    def __init__(self, points, width, length, above=True):
+    def __init__(self, points, width, length, is_above):
         self.points = points
         self.width = width
         self.length = length
-        self.is_above = False
+        self.is_above = is_above
 
     def get_points(self):
         return self.points
@@ -82,13 +85,18 @@ class CrosswalkDetails:
 
 
 class Environment:
-    def __init__(self, camera_id, crosswalk_points, bars, width, length, location):
+    def __init__(self, camera_id, crosswalk, bars, location, id=None):
         self.camera_id = camera_id
         self.bars = bars
-        self.crosswalk_points = crosswalk_points
-        self.width = width
-        self.length = length
+        self.crosswalk = crosswalk
         self.location = location
+        self.id = id
+
+    def get_id(self):
+        if id is None:
+            raise KeyError
+        else:
+            return self.id
 
     def get_location(self):
         return self.location
@@ -96,8 +104,8 @@ class Environment:
     def get_camera_id(self):
         return self.camera_id
 
-    def set_crosswalk_details(self, crosswalk_points):
-        self.crosswalk_points = crosswalk_points
+    def set_crosswalk_details(self, crosswalk):
+        self.crosswalk = crosswalk
 
     def get_low_bar(self):
         return self.bars[LOW_BAR]
@@ -116,12 +124,6 @@ class Environment:
 
     def set_high_bar(self, bar):
         self.bars[HIGH_BAR] = bar
-
-    def get_width(self):
-        return self.width
-
-    def get_length(self):
-        return self.length
 
 
 class CaptureCrosswalk:
