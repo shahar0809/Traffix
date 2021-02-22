@@ -1,8 +1,8 @@
 import tkinter as tk
-import gui.screen as Screen
+import gui.screen as screen
 
-class ChooseCamera(Screen):
+class ChooseCamera(screen.Screen):
     def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
+        super().__init__(parent, controller)
 
         # Continue adding elements here...

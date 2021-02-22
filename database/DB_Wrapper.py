@@ -6,11 +6,13 @@ class IDatabase:
     """
 
     """
-    db_file = 'database//traffixDB.db'
+    auto_file = 'database//traffixDB.db'
 
     def __init__(self, file=None):
         if file is not None:
             self.db_file = file
+        else:
+            self.db_file = self.auto_file
 
         self.hours = [i for i in range(1, 25)]
         self.conn = None
