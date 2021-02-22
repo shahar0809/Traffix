@@ -43,6 +43,7 @@ class TraffixGUI(tk.Tk):
         frame = self.frames[cont]
         frame.deiconify()
 
+
 def main():
     app = TraffixGUI()
 

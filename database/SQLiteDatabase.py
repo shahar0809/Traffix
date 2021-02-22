@@ -6,6 +6,7 @@ from database.DB_Wrapper import IDatabase
 AMOUNT_OF_DAYS = 7
 AMOUNT_OF_HOURS = 24
 
+
 class SQLiteDatabase(IDatabase):
     def get_traffic_bars(self, env_id):
         pass
@@ -277,6 +278,3 @@ class SQLiteDatabase(IDatabase):
             cursor.close()
             return e
 
-
-if __name__ == '__main__':
-    main()
