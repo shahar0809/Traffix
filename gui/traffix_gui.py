@@ -33,15 +33,11 @@ class TraffixGUI(tk.Tk):
             self.frames[windows[window_name]] = frame
             frame.grid(row=0, column=0, sticky="nsew")
 
-        self.show_frame(windows["NEW_ENV"])
-
-    def open_frame(self, cont):
-        frame = self.frames[cont]
-        frame.tkraise()
+        self.show_frame(windows["HOME"])
 
     def show_frame(self, cont):
         frame = self.frames[cont]
-        frame.deiconify()
+        frame.tkraise()
 
 
 def main():
