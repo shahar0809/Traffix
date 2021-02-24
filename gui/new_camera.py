@@ -2,6 +2,7 @@ import tkinter as tk
 import gui.screen as screen
 from utils import CameraDetails as CameraDetails
 
+
 class NewCamera(screen.Screen):
     def __init__(self, parent, controller):
         super().__init__(parent, controller)

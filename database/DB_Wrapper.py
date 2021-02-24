@@ -6,7 +6,7 @@ class IDatabase:
     """
 
     """
-    auto_file = 'database//traffixDB.db'
+    auto_file = 'C:/Users/משתמש/traffix/database/traffixDB.db'
 
     def __init__(self, file=None):
         if file is not None:

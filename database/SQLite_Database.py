@@ -278,3 +278,11 @@ class SQLiteDatabase(IDatabase):
             cursor.close()
             return e
 
+
+def main():
+    database = SQLiteDatabase()
+    database.create_connection()
+
+
+if __name__ == '__main__':
+    main()

@@ -1,9 +1,11 @@
 import tkinter as tk
-from database import SQLiteDatabase as sql_db
+import database.SQLite_Database as sql_db
+
 
 class Screen(tk.Frame):
     def __init__(self, parent, controller):
         self.controller = controller
-        self.database = sql_db.SQLiteDatabase()
+        self.sql = sql_db.SQLiteDatabase()
+        self.database = self.sql.create_connection()
 
         tk.Frame.__init__(self, parent)
