@@ -45,6 +45,7 @@ class TraffixGUI(tk.Tk):
 
 def main():
     app = TraffixGUI()
+    app.mainloop()
 
 
 if __name__ == '__main__':

@@ -1,5 +1,6 @@
 import tkinter as tk
-from gui import choose_camera, mark_crosswalk, set_traffic_bars, choose_location
+from tkinter import messagebox
+from gui import choose_camera, mark_crosswalk, set_traffic_bars, choose_location, home
 from utils import Environment
 import gui.screen as screen
 
@@ -39,14 +40,24 @@ class NewEnvironment(screen.Screen):
         self.controller.open_frame(choose_location.ChooseLocation)
 
     def insert_environment(self):
-        for attribute in self.attributes.keys():
-            if self.attributes[attribute] is None:
-                tk.messagebox.showinfo(title="Attention", message="Please fill all the attributes!")
-                return
+        attributes = [self.controller.data["CAMERA"],
+                      self.controller.data["CROSSWALK"],
+                      self.controller.data["TRAFFIC_BARS"],
+                      self.controller.data["LOCATION"]]
 
-        env = Environment(self.controller.data["CAMERA"],
-                          self.controller.data["CROSSWALK"],
-                          self.controller.data["TRAFFIC_BARS"],
-                          self.controller.data["LOCATION"])
+        is_env_ready = True
+        for attribute in attributes:
+            if attribute is None:
+                is_env_ready = False
 
-        self.database.add_environment(env)
+        if is_env_ready:
+            env = Environment(self.controller.data["CAMERA"],
+                              self.controller.data["CROSSWALK"],
+                              self.controller.data["TRAFFIC_BARS"],
+                              self.controller.data["LOCATION"])
+
+            self.database.add_environment(env)
+            self.controller.show_frame(home.Home)
+        else:
+            messagebox.showinfo(title="Attention", message="Please fill all the attributes!")
+            self.controller.show_frame(self)

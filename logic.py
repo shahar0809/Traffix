@@ -6,7 +6,7 @@ from queue import Queue
 import vehicles_detection.yolo_detection as yolo
 import capture_video as cap
 import measurements_calculations.kinematics_calculation as kinematics
-import database.DB_Wrapper as database
+import database.SQLiteDatabase as database
 import utils
 import vehicles_detection.centroid_tracking as tracker
 import decision_making.decision_making as decision_making
@@ -32,7 +32,7 @@ class System:
         self.frames_queue = Queue()
 
         # Initializing database connection
-        self.db = database.SqliteDatabase()
+        self.db = database.SQLiteDatabase()
 
         # Initializing the frames capturing module
         self.capture = cap.user_interaction(video_path)
