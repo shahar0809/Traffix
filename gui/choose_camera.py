@@ -14,6 +14,5 @@ class ChooseCamera(screen.Screen):
         tk.Button(self, text="add camera", command=self.open_new_camera).pack()
 
     def open_new_camera(self):
-        self.controller.show_frame(new_camera.NewCamera)
-        self.destroy()
+        self.controller.open_frame(new_camera.NewCamera)
 
