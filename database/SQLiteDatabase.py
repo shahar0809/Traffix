@@ -32,16 +32,19 @@ class SQLiteDatabase(IDatabase):
     def sql_table(self):
         sql_create_cameras_table = """CREATE TABLE IF NOT EXISTS cameras (
                                             id integer PRIMARY KEY,
-                                            fps integer NOT NULL
+                                            name text NOT NULL,
+                                            fps integer NOT NULL,
+                                            camera_index integer NOT_NULL
                                         );"""
 
         sql_create_environments_table = """ CREATE TABLE IF NOT EXISTS environments (
                                                     id integer PRIMARY KEY,
+                                                    name TEXT NOT NULL,
                                                     camera_id integer NOT NULL,
-                                                    crosswalk_point_1 point NOT NULL,
-                                                    crosswalk_point_2 point NOT NULL,
-                                                    crosswalk_point_3 point NOT NULL,
-                                                    crosswalk_point_4 point NOT NULL,
+                                                    crosswalk_point_1 TEXT NOT NULL,
+                                                    crosswalk_point_2 TEXT NOT NULL,
+                                                    crosswalk_point_3 TEXT NOT NULL,
+                                                    crosswalk_point_4 TEXT NOT NULL,
                                                     traffic_bar_low integer NOT NULL,
                                                     traffic_bar_mid integer NOT NULL,
                                                     traffic_bar_high integer NOT NULL,
@@ -154,7 +157,7 @@ class SQLiteDatabase(IDatabase):
 
             return utils.Environment(env_id, camera_id, crosswalk_points, bars, width, length)
 
-    def add_camera_details(self, fps):
+    def add_camera_details(self, name, fps, camera_index):
         """
            insert to the table cameras details
            :param fps:
@@ -162,16 +165,17 @@ class SQLiteDatabase(IDatabase):
            """
         cursor = self.conn.cursor()
         # insert camera details
-        sql_insert = "INSERT INTO cameras (fps)" \
-                     "VALUES (?)"
+        sql_insert = "INSERT INTO cameras (name, fps, camera_index)" \
+                     "VALUES (?,?,?)"
 
         try:
-            cursor.execute(sql_insert, (fps))
+            cursor.execute(sql_insert, (name, fps, camera_index))
             self.conn.commit()
             cursor.close()
             return True
 
         except sqlite3.Error as e:
+            print(e)
             cursor.close()
             return e
 
@@ -261,13 +265,13 @@ class SQLiteDatabase(IDatabase):
             for hour in range(AMOUNT_OF_HOURS):
                 self.set_traffic_data(env_id, day, hour, traffic_data[day][hour])
 
-    def add_environment(self, camera_id, crosswalk_points, bars, width, length):
+    def add_environment(self, name, camera_id, crosswalk_points, bars, width, length):
         cursor = self.conn.cursor()
         # insert environment details
         crosswalk_points = [Point.to_string(crosswalk_points[i]) for i in range(4)]
 
-        sql_insert = '''INSERT INTO environments (camera_id, crosswalk_point_1, crosswalk_point_2, crosswalk_point_3, crosswalk_point_4, traffic_bar_low, traffic_bar_mid, traffic_bar_high, width, length) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
-        val = (camera_id, crosswalk_points[0], crosswalk_points[1], crosswalk_points[2], crosswalk_points[3], bars[0], bars[1], bars[2], width, length)
+        sql_insert = '''INSERT INTO environments (name, camera_id, crosswalk_point_1, crosswalk_point_2, crosswalk_point_3, crosswalk_point_4, traffic_bar_low, traffic_bar_mid, traffic_bar_high, width, length) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'''
+        val = (name, camera_id, crosswalk_points[0], crosswalk_points[1], crosswalk_points[2], crosswalk_points[3], bars[0], bars[1], bars[2], width, length)
         try:
             cursor.execute(sql_insert, val)
             self.conn.commit()

@@ -1,50 +1,65 @@
 import tkinter as tk
 from tkinter import messagebox
 from gui import choose_camera, mark_crosswalk, set_traffic_bars, choose_location, home
-from utils import Environment
+from utils import Environment, CameraDetails
 import gui.screen as screen
 
 
 class NewEnvironment(screen.Screen):
     def __init__(self, parent, controller):
         super().__init__(parent, controller)
+        self.parent = parent
+
+        self.columnconfigure((0, 1), weight=1)
+        self.rowconfigure((0, 1, 2, 3, 4, 5), weight=1)
+
+        tk.Label(self, text="Register environment", font=(self.default_font, 45)).grid(row=0, column=0, columnspan=2)
 
         # Camera section
-        tk.Label(self, text="Choose camera:").pack()
-        tk.Button(self, text="camera", command=self.open_choose_camera).pack()
+        tk.Label(self, text="Choose camera:", font=(self.default_font, 20)). \
+            grid(row=1, column=0, padx=30, sticky='w')
+        tk.Button(self, text="camera", command=self.open_choose_camera,
+                  font=(self.default_font, 20)).grid(row=1, column=1, padx=(0, 30), ipadx=8)
 
         # Crosswalk section
-        tk.Label(self, text="Mark crosswalk:").pack()
-        tk.Button(self, text="crosswalk", command=self.open_mark_crosswalk).pack()
+        tk.Label(self, text="Mark crosswalk:", font=(self.default_font, 20)).\
+            grid(row=2, column=0, padx=30, sticky='w')
+        tk.Button(self, text="crosswalk", command=self.open_mark_crosswalk,
+                  font=(self.default_font, 20)).grid(row=2, column=1, padx=(0, 30), ipadx=8)
 
         # Traffic bars section
-        tk.Label(self, text="Choose traffic bars:").pack()
-        tk.Button(self, text="traffic bars", command=self.open_traffic_bars).pack()
+        tk.Label(self, text="Choose traffic bars:", font=(self.default_font, 20)).\
+            grid(row=3, column=0, padx=30, sticky='w')
+        tk.Button(self, text="traffic bars", command=self.open_traffic_bars,
+                  font=(self.default_font, 20)).grid(row=3, column=1, padx=(0, 30), ipadx=8)
 
         # Location coordinates section
-        tk.Label(self, text="Choose location:").pack()
-        tk.Button(self, text="location", command=self.open_choose_location).pack()
+        tk.Label(self, text="Choose location:", font=(self.default_font, 20)).\
+            grid(row=4, column=0, padx=30, sticky='w')
+        tk.Button(self, text="location", command=self.open_choose_location,
+                  font=(self.default_font, 20)).grid(row=4, column=1, padx=(0, 30), ipadx=8)
 
-        tk.Button(self, text="DONE", command=self.insert_environment).pack()
+        tk.Button(self, text="DONE", font=(self.default_font, 30), command=self.insert_environment). \
+            grid(row=5, column=0, columnspan=2, pady=30)
 
     def open_choose_camera(self):
-        self.destroy()
-        self.controller.show_frame(choose_camera.ChooseCamera)
+        self.controller.open_frame(choose_camera.ChooseCamera)
 
     def open_mark_crosswalk(self):
-        self.destroy()
-        self.controller.show_frame(mark_crosswalk.MarkCrosswalk)
+        frame = mark_crosswalk.MarkCrosswalk(self.parent, self.controller)
+        frame.grid(row=0, column=0, sticky="nsew")
+        if self.controller.data["CAMERA"] is None:
+            messagebox.showerror(title="Error", message="Please choose a camera")
+        else:
+            self.controller.open_frame(mark_crosswalk.MarkCrosswalk)
 
     def open_traffic_bars(self):
-        self.destroy()
-        self.controller.show_frame(set_traffic_bars.SetTrafficBars)
+        self.controller.open_frame(set_traffic_bars.SetTrafficBars)
 
     def open_choose_location(self):
-        self.destroy()
-        self.controller.show_frame(choose_location.ChooseLocation)
+        self.controller.open_frame(choose_location.ChooseLocation)
 
     def insert_environment(self):
-        self.destroy()
         attributes = [self.controller.data["CAMERA"],
                       self.controller.data["CROSSWALK"],
                       self.controller.data["TRAFFIC_BARS"],
@@ -62,7 +77,6 @@ class NewEnvironment(screen.Screen):
                               self.controller.data["LOCATION"])
 
             self.database.add_environment(env)
-            self.controller.show_frame(home.Home)
+            self.controller.open_frame(home.Home)
         else:
             messagebox.showinfo(title="Attention", message="Please fill all the attributes!")
-            self.controller.show_frame(self)

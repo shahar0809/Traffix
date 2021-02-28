@@ -7,22 +7,18 @@ class NewCamera(screen.Screen):
     def __init__(self, parent, controller):
         super().__init__(parent, controller)
 
-        self.camera_label = tk.Label(self, text="New camera")
-        self.camera_label.configure(font=("Courier", 44))
-        self.camera_label.pack()
+        tk.Label(self, text="Register new camera", font=(self.default_font, 45)).pack(pady=(30, 50))
+        tk.Label(self, text="Camera name:", font=(self.default_font, 20)).pack(pady=10)
+        self.name_box = tk.Entry(self, text="new camera", font=(self.default_font, 20))
+        self.name_box.pack(pady=(0, 20))
 
-        self.fps_label = tk.Label(self, text="Frames per second")
-        self.fps_label.configure(font=("Courier", 20))
-        self.fps_label.pack()
+        tk.Label(self, text="Frames per second:", font=(self.default_font, 20)).pack(pady=10)
+        self.fps_box = tk.Entry(self, text="30", font=(self.default_font, 20))
+        self.fps_box.pack(pady=(0, 20))
 
-        self.fps_box = tk.Entry(self, text="30")
-        self.fps_box.configure(font=("Courier", 20))
-        self.fps_box.pack()
-
-        self.done_button = tk.Button(self, text="Done", command=self.register_camera)
-        self.done_button.configure(font=("Courier", 30))
-        self.done_button.pack()
+        tk.Button(self, text="Done", font=(self.default_font, 30), command=self.register_camera).\
+            pack(side="bottom", pady=(0, 30))
 
     def register_camera(self):
-        camera = CameraDetails(int(self.fps_box.get()))
-        self.controller.data["CAMERA"] = camera
+        self.database.add_camera_details(str(self.name_box.get()), int(self.fps_box.get()), 0)
+        self.destroy_screen()
