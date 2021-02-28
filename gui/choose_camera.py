@@ -8,6 +8,8 @@ class ChooseCamera(screen.Screen):
         super().__init__(parent, controller)
         nums = 3
 
+        tk.Label(self, text="Select camera").pack()
+        
         # for num in range(nums):
         # tk.Button(self, text="show camera", command=self).pack()
 

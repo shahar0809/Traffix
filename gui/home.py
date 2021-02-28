@@ -8,6 +8,8 @@ class Home(screen.Screen):
         super().__init__(parent, controller)
         nums = 3
 
+        tk.Label(self, text="Welcome").pack()
+
         for num in range(nums):
             tk.Button(self, text="show environment", command=self.open_environment_stream).pack()
 
