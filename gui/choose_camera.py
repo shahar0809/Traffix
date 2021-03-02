@@ -13,11 +13,14 @@ class ChooseCamera(screen.Screen):
         tk.Label(self, text="Select camera", font=(self.default_font, 64)).pack(pady=30)
         nums = 3
 
+        # TODO:This should be replaced with something similar to scroll view/list view
         for num in range(nums):
-            tk.Button(self, text="Show camera", command=self.open_new_camera,
+            # TODO: The text of each button should be the name of the camera + id
+            # TODO: Command needs to add camera to data in controller and destroy screen
+            tk.Button(self, text="Choose camera " + str(num), command=self.open_new_camera,
                       font=(self.default_font, 20)).pack(pady=10)
 
-        tk.Button(self, text="Add an environment", command=self.open_new_camera,
+        tk.Button(self, text="Add a new camera", command=self.open_new_camera,
                   font=(self.default_font, 20)).pack(pady=30, side="bottom")
 
     def open_new_camera(self):
