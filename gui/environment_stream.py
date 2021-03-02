@@ -6,3 +6,7 @@ class EnvironmentStream(screen.Screen):
         super().__init__(parent, controller)
 
         # Continue adding elements here...
+
+
+class CustomCapture:
+    pass

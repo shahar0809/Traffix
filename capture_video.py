@@ -107,7 +107,6 @@ class StaticCapture(Capture):
     def video_capture(self):
         return cv2.VideoCapture(self.video_path)
 
-
 def user_interaction(video_path=None):
     STORED_VIDEO = 1
     LIVE_FOOTAGE = 2
