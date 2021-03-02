@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox
 from gui import choose_camera, mark_crosswalk, set_traffic_bars, choose_location, home
-from utils import Environment, CameraDetails
+from utils import Environment
 import gui.screen as screen
 
 
