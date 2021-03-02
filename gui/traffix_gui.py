@@ -1,7 +1,6 @@
 import tkinter as tk
-from utils import CameraDetails
 from gui import choose_location, choose_camera, environment_stream, \
-    home, mark_crosswalk, new_camera, new_environment, set_traffic_bars, update_environment
+    home, new_camera, new_environment, set_traffic_bars, update_environment
 
 windows = {
     "CHOOSE_CAMERA": choose_camera.ChooseCamera,

@@ -1,6 +1,6 @@
 import tkinter as tk
 import database.SQLiteDatabase as sql_db
-from tkinter import font
+
 
 class Screen(tk.Frame):
     def __init__(self, parent, controller):
