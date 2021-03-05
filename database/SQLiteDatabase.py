@@ -321,6 +321,29 @@ class SQLiteDatabase(IDatabase):
             cursor.close()
             return e
 
+    def get_cameras(self):
+        sql_query = "SELECT * FROM CAMERAS"
+        cursor = self.conn.execute(sql_query)
+        result = cursor.fetchall()
+
+        cameras = {}
+        for camera in result:
+            cam_id = camera[0]
+            cameras[cam_id] = utils.CameraDetails(camera[1], camera[2], camera[3], camera[0])
+
+        return cameras
+
+    def get_environments(self):
+        sql_query = "SELECT COUNT(*) FROM ENVIRONMENTS"
+        cursor = self.conn.execute(sql_query)
+        result = cursor.fetchone()
+
+        envs = {}
+        for env_id in range(1, result + 1):
+            envs[env_id] = self.get_environment(env_id)
+
+        return envs
+
 
 def main():
     database = SQLiteDatabase()
