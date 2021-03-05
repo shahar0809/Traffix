@@ -44,5 +44,5 @@ class IDatabase:
     def set_traffic_per_week(self, env_id, loads_list):
         raise NotImplementedError
 
-    def add_environment(self, name, camera_id, crosswalk_points, bars, width, length):
+    def add_environment(self, name, camera_id, crosswalk, bars):
         raise NotImplementedError
