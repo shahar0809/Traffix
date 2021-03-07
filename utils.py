@@ -96,7 +96,8 @@ class CrosswalkDetails:
 
 
 class Environment:
-    def __init__(self, camera_id, crosswalk, bars, location, id=None):
+    def __init__(self, name, camera_id, crosswalk, bars, location, id=None):
+        self.name = name
         self.camera_id = camera_id
         self.bars = bars
         self.crosswalk = crosswalk
@@ -109,11 +110,26 @@ class Environment:
         else:
             return self.id
 
+    def get_name(self):
+        return self.name
+
+    def set_name(self, new_name):
+        self.name = new_name
+
     def get_location(self):
         return self.location
 
+    def set_location(self, new_location):
+        self.location = new_location
+
     def get_camera_id(self):
         return self.camera_id
+
+    def set_camera_id(self, camera_id):
+        self.camera_id = camera_id
+
+    def get_crosswalk_details(self):
+        return self.crosswalk
 
     def set_crosswalk_details(self, crosswalk):
         self.crosswalk = crosswalk
@@ -135,6 +151,12 @@ class Environment:
 
     def set_high_bar(self, bar):
         self.bars[HIGH_BAR] = bar
+
+    def get_is_above(self):
+        return self.crosswalk.get_is_above()
+
+    def set_is_above(self, is_above):
+        self.crosswalk.set_is_above(is_above)
 
 
 def draw_shape(shape, frame):

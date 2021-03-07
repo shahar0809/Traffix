@@ -26,6 +26,7 @@ class TraffixGUI(tk.Tk):
 
         self.frames = {}
         self.data = {}
+        self.init_dict()
 
         self.open_frame(windows["HOME"])
 
@@ -37,6 +38,14 @@ class TraffixGUI(tk.Tk):
         frame = window(self.container, self)
         frame.grid(row=0, column=0, sticky="nsew")
         frame.tkraise()
+
+    def init_dict(self):
+        keys = ["CAMERA", "CROSSWALK", "LOCATION", "TRAFFIC_BARS", "CROSSWALK_WIDTH",
+                "CROSSWALK_LENGTH", "ENV_ID"]
+
+        for key in keys:
+            self.data[key] = None
+
 
 
 def main():
