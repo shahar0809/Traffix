@@ -13,6 +13,7 @@ windows = {
     "UPDATE_ENV": update_environment.UpdateEnvironment
 }
 
+
 class TraffixGUI(tk.Tk):
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
