@@ -142,7 +142,7 @@ class SQLiteDatabase(IDatabase):
         for row in record:
             for i in range(4):
                 numbers = row[i].split(",")
-                numbers = [int(x) for x in numbers]
+                numbers = [-int(x) for x in numbers]
                 crosswalk_points += [numbers]
             width = row[4]
             length = row[5]
