@@ -10,7 +10,7 @@ class ChooseCamera(screen.Screen):
         self.cameras = self.database.get_cameras()
 
         self.columnconfigure((0, 1), weight=1)
-        self.rowconfigure(tuple(range(len(self.cameras))), weight=1)
+        self.rowconfigure(tuple(range(len(self.cameras) + 1)), weight=1)
 
         tk.Label(self, text="Select camera", font=(self.default_font, 64)).pack(pady=30)
         self.buttons = {}
@@ -31,6 +31,7 @@ class ChooseCamera(screen.Screen):
 
     def open_new_camera(self):
         self.controller.open_frame(new_camera.NewCamera)
+        self.destroy_screen()
 
     def choose_camera(self, cam_id):
         self.controller.data["CAMERA"] = self.cameras[cam_id]

@@ -36,11 +36,11 @@ class SQLiteDatabase(IDatabase):
         return self.conn
 
     def sql_table(self):
-        sql_create_cameras_table = """CREATE TABLE IF NOT EXISTS cameras (
+        sql_create_cameras_table = """CREATE TABLE IF NOT EXISTS cameras ( 
                                             id integer PRIMARY KEY,
                                             name text NOT NULL,
                                             fps integer NOT NULL,
-                                            camera_index integer NOT_NULL
+                                            camera_index integer NOT NULL
                                         );"""
 
         sql_create_environments_table = """ CREATE TABLE IF NOT EXISTS environments (
@@ -55,10 +55,11 @@ class SQLiteDatabase(IDatabase):
                                                     traffic_bar_high integer NOT NULL,
                                                     width integer NOT NULL,
                                                     length integer NOT NULL,
-                                                    FOREIGN KEY (camera_id) REFERENCES cameras (id),
-                                                    is_above BIT NOT NULL,
+                                                    is_above INTEGER NOT NULL,
                                                     longitude INTEGER NOT NULL,
-                                                    latitude INTEGER NOT NULL
+                                                    latitude INTEGER NOT NULL,
+                                                    camera_id INTEGER NOT NULL,
+                                                    FOREIGN KEY (camera_id) REFERENCES cameras (id)
                                                ); """
 
         sql_create_loads_table = """ CREATE TABLE IF NOT EXISTS loads (
@@ -96,6 +97,7 @@ class SQLiteDatabase(IDatabase):
             c = self.conn.cursor()
             c.execute(create_table_sql)
         except sqlite3.Error as e:
+            print(e)
             return e
 
     def get_camera_details(self, camera_id):
@@ -139,7 +141,9 @@ class SQLiteDatabase(IDatabase):
 
         for row in record:
             for i in range(4):
-                crosswalk_points += [Point.to_point(row[i])]
+                numbers = row[i].split(",")
+                numbers = [int(x) for x in numbers]
+                crosswalk_points += [numbers]
             width = row[4]
             length = row[5]
             is_above = row[6]
@@ -205,21 +209,23 @@ class SQLiteDatabase(IDatabase):
         cursor = self.conn.cursor()
         # update crosswalk details
         sql_update = "UPDATE environments SET " \
-                     "width = ?" \
-                     "length = ?" \
-                     "is_above = ?" \
+                     "width = ?," \
+                     "length = ?," \
+                     "is_above = ?," \
                      "crosswalk_point_1 = ?, " \
                      "crosswalk_point_2 = ?, " \
                      "crosswalk_point_3 = ?, " \
                      "crosswalk_point_4 = ? " \
                      "WHERE id = ?"
 
+        params = (crosswalk.get_width(), crosswalk.get_length(), int(crosswalk.get_is_above()),
+                  str(crosswalk_points[0]),
+                  str(crosswalk_points[1]),
+                  str(crosswalk_points[2]), str(crosswalk_points[3]),
+                  env_id)
+
         try:
-            cursor.execute(sql_update,
-                           (crosswalk.get_width(), crosswalk.get_length(), crosswalk.get_is_above(),
-                            crosswalk_points[0], crosswalk_points[1],
-                            crosswalk_points[2], crosswalk_points[3],
-                            env_id))
+            cursor.execute(sql_update, params)
             self.conn.commit()
             cursor.close()
             return True

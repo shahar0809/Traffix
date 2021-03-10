@@ -32,7 +32,7 @@ class System:
         self.frames_queue = Queue()
 
         # Initializing database connection
-        self.db = database.SQLiteDatabase()
+        self.db = database.SQLiteDatabase("database\\traffixDB.db")
 
         # Initializing the frames capturing module
         self.capture = cap.user_interaction(video_path)
@@ -47,7 +47,9 @@ class System:
         self.crosswalk_mark = utils.CaptureCrosswalk()
         crosswalk_points = self.crosswalk_mark.get_crosswalk(frame)
         print(crosswalk_points)
-        self.db.set_crosswalk_details(crosswalk_points, 1)
+
+        crosswalk = utils.CrosswalkDetails(crosswalk_points, 30, 5, True)
+        self.db.set_crosswalk_details(crosswalk, 1)
 
         # Getting camera and crosswalk details from database
         self.camera = self.db.get_camera_details(camera_id)

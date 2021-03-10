@@ -1,7 +1,7 @@
 import tkinter as tk
 import gui.screen as screen
 from utils import CameraDetails as CameraDetails
-
+from gui import choose_camera as choose_camera
 
 class NewCamera(screen.Screen):
     def __init__(self, parent, controller):
@@ -22,3 +22,4 @@ class NewCamera(screen.Screen):
     def register_camera(self):
         self.database.add_camera_details(str(self.name_box.get()), int(self.fps_box.get()), 0)
         self.destroy_screen()
+        self.controller.open_frame(choose_camera.ChooseCamera)
