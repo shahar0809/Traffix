@@ -48,7 +48,7 @@ class System:
         crosswalk_points = self.crosswalk_mark.get_crosswalk(frame)
         print(crosswalk_points)
 
-        crosswalk = utils.CrosswalkDetails(crosswalk_points, 30, 5, True)
+        crosswalk = utils.CrosswalkDetails(crosswalk_points, 30, 5, False)
         self.db.set_crosswalk_details(crosswalk, 1)
 
         # Getting camera and crosswalk details from database
@@ -75,9 +75,6 @@ class System:
         :return: None
         """
         self.capture.capture_frames(self.frames_queue)
-
-        for i in range(1500):
-            self.frames_queue.get()
 
         while self.frames_queue.qsize() > 0:
             frames = self.frames_queue.get()
