@@ -56,8 +56,8 @@ class SQLiteDatabase(IDatabase):
                                                     width integer NOT NULL,
                                                     length integer NOT NULL,
                                                     is_above INTEGER NOT NULL,
-                                                    longitude FLOAT NOT NULL,
-                                                    latitude FLOAT NOT NULL,
+                                                    longitude TEXT NOT NULL,
+                                                    latitude TEXT NOT NULL,
                                                     camera_id INTEGER NOT NULL,
                                                     FOREIGN KEY (camera_id) REFERENCES cameras (id)
                                                ); """
@@ -299,25 +299,26 @@ class SQLiteDatabase(IDatabase):
             for hour in range(AMOUNT_OF_HOURS):
                 self.set_traffic_data(env_id, day, hour, traffic_data[day][hour])
 
-    def add_environment(self, name, camera_id, crosswalk, bars):
+    def add_environment(self, name, camera_id, crosswalk, bars, location):
         cursor = self.conn.cursor()
         crosswalk_points = crosswalk.get_points()
 
         # insert environment details
-        crosswalk_points = [Point.to_string(crosswalk_points[i]) for i in range(4)]
+        points = [Point.to_string(crosswalk_points[i]) for i in range(4)]
 
         sql_insert = \
             "INSERT INTO environments (name, " \
             "crosswalk_point_1, crosswalk_point_2, crosswalk_point_3, crosswalk_point_4, " \
             "traffic_bar_low, traffic_bar_med, traffic_bar_high, " \
-            "width, length, camera_id, is_above) " \
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+            "width, length, is_above, latitude, longitude, camera_id) " \
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
         val = (name,
-               crosswalk_points[0], crosswalk_points[1], crosswalk_points[2], crosswalk_points[3],
+               points[0], points[1], points[2], points[3],
                bars[0], bars[1], bars[2],
                crosswalk.get_width(), crosswalk.get_length(),
-               camera_id, int(crosswalk.get_is_above()))
+               location[0], location[1],
+               int(crosswalk.get_is_above()), camera_id)
         try:
             cursor.execute(sql_insert, val)
             self.conn.commit()
@@ -326,6 +327,7 @@ class SQLiteDatabase(IDatabase):
 
         except sqlite3.Error as e:
             cursor.close()
+            print(e)
             return e
 
     def get_cameras(self):
