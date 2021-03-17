@@ -17,6 +17,9 @@ class IDatabase:
         self.hours = [i for i in range(1, 25)]
         self.conn = None
 
+    def create_connection(self):
+        raise NotImplementedError
+
     def get_camera_details(self, camera_id):
         raise NotImplementedError
 
@@ -45,4 +48,10 @@ class IDatabase:
         raise NotImplementedError
 
     def add_environment(self, name, camera_id, crosswalk, bars):
+        raise NotImplementedError
+
+    def get_cameras(self):
+        raise NotImplementedError
+
+    def get_environments(self):
         raise NotImplementedError

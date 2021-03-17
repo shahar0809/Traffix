@@ -56,8 +56,8 @@ class SQLiteDatabase(IDatabase):
                                                     width integer NOT NULL,
                                                     length integer NOT NULL,
                                                     is_above INTEGER NOT NULL,
-                                                    longitude INTEGER NOT NULL,
-                                                    latitude INTEGER NOT NULL,
+                                                    longitude FLOAT NOT NULL,
+                                                    latitude FLOAT NOT NULL,
                                                     camera_id INTEGER NOT NULL,
                                                     FOREIGN KEY (camera_id) REFERENCES cameras (id)
                                                ); """
@@ -152,10 +152,11 @@ class SQLiteDatabase(IDatabase):
 
     def get_environment(self, env_id):
         """
-           return environments details
-           :param env_id: The id of the environments that we want to return
-           :return: environments details
-           """
+        return environments details
+        :param env_id: The id of the environments that we want to return
+        :type env_id: int
+        :return: environments details
+        """
         # select environments details
         sql_select = """SELECT * FROM environments WHERE ID = ?"""
         cursor = self.conn.execute(sql_select, (env_id,))
@@ -342,7 +343,7 @@ class SQLiteDatabase(IDatabase):
     def get_environments(self):
         sql_query = "SELECT COUNT(*) FROM ENVIRONMENTS"
         cursor = self.conn.execute(sql_query)
-        result = cursor.fetchone()
+        result = cursor.fetchone()[0]
 
         envs = {}
         for env_id in range(1, result + 1):

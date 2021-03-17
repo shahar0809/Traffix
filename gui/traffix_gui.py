@@ -40,7 +40,7 @@ class TraffixGUI(tk.Tk):
 
     def init_dict(self):
         keys = ["CAMERA", "CROSSWALK", "LOCATION", "TRAFFIC_BARS", "CROSSWALK_WIDTH",
-                "CROSSWALK_LENGTH", "ENV_ID"]
+                "CROSSWALK_LENGTH", "ENVIRONMENT"]
 
         for key in keys:
             self.data[key] = None

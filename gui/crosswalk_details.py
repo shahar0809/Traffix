@@ -22,10 +22,10 @@ class CrosswalkDetails(screen.Screen):
         self.length_box.grid(row=2, column=1, padx=(0, 30), ipadx=8)
 
         tk.Button(self, text="MARK", font=(self.default_font, 30), command=self.show_next_screen). \
-            grid(row=3, column=0, columnspan=2, pady=30)
+            grid(row=3, column=0, columnspan=2, pady=20)
 
         tk.Button(self, text="DONE", font=(self.default_font, 30), command=self.back). \
-            grid(row=4, column=0, columnspan=2, pady=30)
+            grid(row=4, column=0, columnspan=2, pady=10)
 
     def show_next_screen(self):
         self.controller.data["CROSSWALK_WIDTH"] = int(self.width_box.get())

@@ -13,7 +13,7 @@ import decision_making.decision_making as decision_making
 
 
 class System:
-    def __init__(self, camera_id, env_id, video_path=None):
+    def __init__(self, frames_queue, results_queue, env, db, video_path=None):
         """
         An initializer to the System object. Initializes all the components and modules that the logic unit uses:
         * Objects detection
@@ -21,39 +21,32 @@ class System:
         * Measurements calculation
         * Database
         * Decision making
-        :param camera_id: The ID (in the db) of the video source.
-        :type camera_id: int
         :param env_id: The ID (in the db) of the environment.
         :type env_id: int
         :param video_path:
         :type video_path: str
         """
-        self.result_queue = Queue()
-        self.frames_queue = Queue()
+        self.result_queue = results_queue
+        self.frames_queue = frames_queue
 
-        # Initializing database connection
-        self.db = database.SQLiteDatabase("database\\traffixDB.db")
-
-        # Initializing the frames capturing module
-        self.capture = cap.user_interaction(video_path)
-
-        capture = cv.VideoCapture(video_path)
-
-        is_frame, frame = capture.read()
-        for i in range(10):
-            is_frame, frame = capture.read()
+        # Initializing database connection and getting env
+        self.db = db
+        self.env = env
 
         # Asking user to mark the crosswalk in the frame
-        self.crosswalk_mark = utils.CaptureCrosswalk()
-        crosswalk_points = self.crosswalk_mark.get_crosswalk(frame)
-        print(crosswalk_points)
+        # self.crosswalk_mark = utils.CaptureCrosswalk()
+        # crosswalk_points = self.crosswalk_mark.get_crosswalk(frame)
+        # print(crosswalk_points)
 
-        crosswalk = utils.CrosswalkDetails(crosswalk_points, 30, 5, True)
-        self.db.set_crosswalk_details(crosswalk, 1)
+        # crosswalk = utils.CrosswalkDetails(crosswalk_points, 30, 5, True)
+        # self.db.set_crosswalk_details(crosswalk, 1)
 
         # Getting camera and crosswalk details from database
-        self.camera = self.db.get_camera_details(camera_id)
-        self.crosswalk = self.db.get_crosswalk_details(env_id)
+        self.camera = self.db.get_camera_details(self.env.get_camera_id())
+        self.crosswalk = self.env.get_crosswalk_details()
+
+        # Initializing the frames capturing module
+        self.capture = cap.LiveCapture(self.frames_queue, self.result_queue, 0)
 
         # Initializing an object tracker
         self.tracker = tracker.CentroidTracker(self.crosswalk)
@@ -76,23 +69,9 @@ class System:
         """
         self.capture.capture_frames(self.frames_queue)
 
-        for i in range(1500):
-            self.frames_queue.get()
-
         while self.frames_queue.qsize() > 0:
             frames = self.frames_queue.get()
-
             self.handle_frames(frames)
-
-            (res_frame, decision) = self.result_queue.get()
-            cv.imshow('Traffix', res_frame)
-            print("Can pedestrians pass:")
-            print(decision)
-
-            if cv.waitKey(1) & 0xFF == ord('q'):
-                break
-
-        cv.destroyAllWindows()
 
     def handle_frames(self, frames):
         """
