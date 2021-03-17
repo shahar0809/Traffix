@@ -4,7 +4,7 @@ DELIMITER = ','
 
 class Point:
     def __init__(self, init_x, init_y):
-        self.x = init_x
+        self.x = -init_x
         self.y = -init_y
 
     def get_x(self):
@@ -14,7 +14,7 @@ class Point:
         return self.y
 
     def __str__(self):
-        return 'x=' + str(self.x) + ', y=' + str(self.y)
+        return str(self.x) + ',' + str(self.y)
 
     def distance(self, target):
         x_diff = target.get_x() - self.x

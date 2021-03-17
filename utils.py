@@ -1,4 +1,4 @@
-import measurements_calculations.math_classes as geo
+from measurements_calculations.math_classes import Point
 import cv2
 import vehicles_detection.centroid_tracking as tracker
 
@@ -68,7 +68,7 @@ class CameraDetails:
 
 class CrosswalkDetails:
     def __init__(self, points, width, length, is_above):
-        self.points = points
+        self.points = [Point(point[0], point[1]) for point in points]
         self.width = width
         self.length = length
         self.is_above = is_above
@@ -190,3 +190,37 @@ def put_bounding_box(frame, vehicle):
     cv2.putText(frame, text, (x, y - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.4, color, 1)
     frame = cv2.circle(frame, tracker.CentroidTracker.calculate_centroid(box), radius=2, color=(0, 100, 200), thickness=2)
     return frame
+
+class CaptureCrosswalk:
+    def __init__(self):
+        self.crosswalk = []
+        self.image = None
+
+    def capture_mouse_click(self, event, x, y, flags, param):
+        if event == cv2.EVENT_LBUTTONDOWN:
+            self.image = cv2.circle(self.image, (x, y), radius=3, color=(255, 0, 0), thickness=2)
+            self.crosswalk += [(x, y)]
+
+    def get_crosswalk(self, frame):
+        print("NOTE: Mark the line closest to the traffic direction first")
+        print("Press c to send the crosswalk marked")
+        print("Press r to reset the crosswalk markings")
+
+        clone = frame.copy()
+        self.image = frame
+        cv2.namedWindow("Traffix")
+        cv2.setMouseCallback("Traffix", self.capture_mouse_click)
+
+        # Keep looping until the 'c' key is pressed
+        while True:
+            # Display the image and wait for a keypress
+            cv2.imshow("Traffix", self.image)
+            key = cv2.waitKey(1) & 0xFF
+            # If the 'r' key is pressed, reset the cropping region
+            if key == ord("r"):
+                self.image = clone.copy()
+                self.crosswalk = []
+            # If the 'c' key is pressed, break from the loop
+            elif key == ord("c"):
+                cv2.destroyAllWindows()
+                return self.crosswalk
