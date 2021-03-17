@@ -55,10 +55,10 @@ class SQLiteDatabase(IDatabase):
                                                     traffic_bar_high integer NOT NULL,
                                                     width integer NOT NULL,
                                                     length integer NOT NULL,
-                                                    FOREIGN KEY (camera_id) REFERENCES cameras (id),
                                                     is_above BIT NOT NULL,
                                                     longitude INTEGER NOT NULL,
-                                                    latitude INTEGER NOT NULL
+                                                    latitude INTEGER NOT NULL,
+                                                    FOREIGN KEY (camera_id) REFERENCES cameras (id)
                                                ); """
 
         sql_create_loads_table = """ CREATE TABLE IF NOT EXISTS loads (
