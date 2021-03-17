@@ -18,90 +18,7 @@
           <option value="E501" />
           <option value="W29" />
           <option value="E501" />
-          <option value="W29" />
-          <option value="E501" />
-          <option value="E302" />
-          <option value="W29" />
-          <option value="E501" />
-          <option value="W29" />
-          <option value="E501" />
-          <option value="W29" />
-          <option value="E501" />
-          <option value="W29" />
-          <option value="E501" />
-          <option value="W29" />
-          <option value="E501" />
-          <option value="W29" />
-          <option value="E501" />
-          <option value="W29" />
-          <option value="E501" />
-          <option value="W29" />
-          <option value="E501" />
-          <option value="W29" />
-          <option value="E501" />
-          <option value="W29" />
-          <option value="E501" />
-          <option value="W29" />
-          <option value="E501" />
-          <option value="W29" />
-          <option value="E501" />
-          <option value="W29" />
-          <option value="E501" />
-          <option value="W29" />
-          <option value="E501" />
-          <option value="W29" />
-          <option value="E501" />
-          <option value="W29" />
-          <option value="E501" />
-          <option value="W29" />
-          <option value="E501" />
-          <option value="W29" />
-          <option value="E501" />
-          <option value="W29" />
-          <option value="E501" />
-          <option value="W29" />
-          <option value="E501" />
-          <option value="W29" />
-          <option value="E501" />
-          <option value="W29" />
-          <option value="E501" />
-          <option value="W29" />
-          <option value="E501" />
           <option value="E701" />
-          <option value="W29" />
-          <option value="E501" />
-          <option value="W29" />
-          <option value="E501" />
-          <option value="W29" />
-          <option value="E501" />
-          <option value="W29" />
-          <option value="E501" />
-          <option value="W29" />
-          <option value="E501" />
-          <option value="W29" />
-          <option value="E501" />
-          <option value="W29" />
-          <option value="E501" />
-          <option value="W29" />
-          <option value="E501" />
-          <option value="W29" />
-          <option value="E501" />
-          <option value="W29" />
-          <option value="E501" />
-          <option value="W29" />
-          <option value="E501" />
-          <option value="W29" />
-          <option value="E501" />
-          <option value="W29" />
-          <option value="E501" />
-          <option value="W29" />
-          <option value="E501" />
-          <option value="W29" />
-          <option value="E501" />
-          <option value="W29" />
-          <option value="E501" />
-          <option value="W29" />
-          <option value="E501" />
           <option value="W29" />
           <option value="E501" />
           <option value="W29" />
@@ -174,19 +91,7 @@
     <inspection_tool class="PyPep8NamingInspection" enabled="true" level="WEAK WARNING" enabled_by_default="true">
       <option name="ignoredErrors">
         <list>
-          <option value="N806" />
-          <option value="N802" />
-          <option value="N814" />
           <option value="N813" />
-        </list>
-      </option>
-    </inspection_tool>
-    <inspection_tool class="PyUnresolvedReferencesInspection" enabled="true" level="WARNING" enabled_by_default="true">
-      <option name="ignoredIdentifiers">
-        <list>
-          <option value="cv2.VideoCapture" />
-          <option value="cv2.line" />
-          <option value="cv2.destroyAllWindows" />
         </list>
       </option>
     </inspection_tool>
