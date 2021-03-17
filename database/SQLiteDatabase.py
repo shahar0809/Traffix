@@ -195,7 +195,7 @@ class SQLiteDatabase(IDatabase):
     def set_crosswalk_details(self, crosswalk, env_id):
         """
         insert to the table cameras details
-        :param crosswalk_points: A list of the information we want to update to.
+        :param crosswalk: A list of the information we want to update to.
         :param env_id: The id of the environment of the crosswalk
         :return: true if the update works, false if doesn't.
         """
