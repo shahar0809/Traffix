@@ -56,8 +56,8 @@ class SQLiteDatabase(IDatabase):
                                                     width integer NOT NULL,
                                                     length integer NOT NULL,
                                                     is_above INTEGER NOT NULL,
-                                                    longitude FLOAT NOT NULL,
-                                                    latitude FLOAT NOT NULL,
+                                                    longitude TEXT NOT NULL,
+                                                    latitude TEXT NOT NULL,
                                                     camera_id INTEGER NOT NULL,
                                                     FOREIGN KEY (camera_id) REFERENCES cameras (id)
                                                ); """
@@ -361,7 +361,7 @@ class SQLiteDatabase(IDatabase):
             "crosswalk_point_1, crosswalk_point_2, crosswalk_point_3, crosswalk_point_4, " \
             "traffic_bar_low, traffic_bar_med, traffic_bar_high, " \
             "width, length, camera_id, is_above) " \
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
         val = (name,
                crosswalk_points[0], crosswalk_points[1], crosswalk_points[2], crosswalk_points[3],

@@ -11,49 +11,49 @@ class UpdateEnvironment(screen.Screen):
         self.parent = parent
 
         self.columnconfigure((0, 1), weight=1)
-        self.rowconfigure((0, 1, 2, 3, 4, 5, 6), weight=1)
+        self.rowconfigure((0, 1, 2, 3, 4, 5, 6, 7), weight=1)
 
-        tk.Label(self, text="Register environment", font=(self.default_font, 45)).grid(row=0, column=0,
+        tk.Label(self, text="Update environment", font=(self.default_font, 45)).grid(row=0, column=0,
                                                                                        columnspan=2)
 
         # Name section
-        tk.Label(self, text="Name:", font=(self.default_font, 20)). \
+        tk.Label(self, text="Name:", font=(self.default_font, 16)). \
             grid(row=1, column=0, padx=30, sticky='w')
         self.name = tk.Entry(self, font=(self.default_font, 20))
         self.name.grid(row=1, column=1, padx=(0, 30), ipadx=8)
 
         # Env id section
-        tk.Label(self, text="Enter id of environment:", font=(self.default_font, 20)). \
+        tk.Label(self, text="ID of environment:", font=(self.default_font, 16)). \
             grid(row=2, column=0, padx=30, sticky='w')
-        tk.Button(self, text="ID", command=self.open_choose_camera,
-                  font=(self.default_font, 20)).grid(row=2, column=1, padx=(0, 30), ipadx=8)
+        self.id = tk.Entry(self, font=(self.default_font, 20))
+        self.id.grid(row=2, column=1, padx=(0, 30), ipadx=8)
 
         # Camera section
-        tk.Label(self, text="Choose camera:", font=(self.default_font, 20)). \
-            grid(row=2, column=0, padx=30, sticky='w')
-        tk.Button(self, text="camera", command=self.open_choose_camera,
-                  font=(self.default_font, 20)).grid(row=2, column=1, padx=(0, 30), ipadx=8)
-
-        # Crosswalk section
-        tk.Label(self, text="Mark crosswalk:", font=(self.default_font, 20)). \
+        tk.Label(self, text="Choose camera:", font=(self.default_font, 16)). \
             grid(row=3, column=0, padx=30, sticky='w')
-        tk.Button(self, text="crosswalk", command=self.open_mark_crosswalk,
+        tk.Button(self, text="camera", command=self.open_choose_camera,
                   font=(self.default_font, 20)).grid(row=3, column=1, padx=(0, 30), ipadx=8)
 
-        # Traffic bars section
-        tk.Label(self, text="Choose traffic bars:", font=(self.default_font, 20)). \
+        # Crosswalk section
+        tk.Label(self, text="Mark crosswalk:", font=(self.default_font, 16)). \
             grid(row=4, column=0, padx=30, sticky='w')
-        tk.Button(self, text="traffic bars", command=self.open_traffic_bars,
+        tk.Button(self, text="crosswalk", command=self.open_mark_crosswalk,
                   font=(self.default_font, 20)).grid(row=4, column=1, padx=(0, 30), ipadx=8)
 
-        # Location coordinates section
-        tk.Label(self, text="Choose location:", font=(self.default_font, 20)). \
+        # Traffic bars section
+        tk.Label(self, text="Choose traffic bars:", font=(self.default_font, 16)). \
             grid(row=5, column=0, padx=30, sticky='w')
-        tk.Button(self, text="location", command=self.open_choose_location,
+        tk.Button(self, text="traffic bars", command=self.open_traffic_bars,
                   font=(self.default_font, 20)).grid(row=5, column=1, padx=(0, 30), ipadx=8)
 
+        # Location coordinates section
+        tk.Label(self, text="Choose location:", font=(self.default_font, 16)). \
+            grid(row=6, column=0, padx=30, sticky='w')
+        tk.Button(self, text="location", command=self.open_choose_location,
+                  font=(self.default_font, 20)).grid(row=6, column=1, padx=(0, 30), ipadx=8)
+
         tk.Button(self, text="DONE", font=(self.default_font, 30), command=self.update_environment). \
-            grid(row=6, column=0, columnspan=2, pady=30)
+            grid(row=7, column=0, columnspan=2, pady=30)
 
     def open_choose_camera(self):
         self.controller.open_frame(choose_camera.ChooseCamera)
