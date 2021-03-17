@@ -69,17 +69,19 @@ class NewEnvironment(screen.Screen):
                       self.controller.data["TRAFFIC_BARS"],
                       self.controller.data["LOCATION"]]
 
-        print(attributes)
-
-        is_env_ready = self.name.get() != ""
+        is_env_ready = self.name.get() == ""
         for attribute in attributes:
             if attribute is None:
                 is_env_ready = False
 
         if is_env_ready:
-            self.database.add_environment(str(self.name.get()), self.controller.data["CAMERA"].get_id(),
-                                          self.controller.data["CROSSWALK"], self.controller.data["TRAFFIC_BARS"],
-                                          self.controller.data["LOCATION"])
+            env = Environment(str(self.name.get()),
+                              self.controller.data["CAMERA"],
+                              self.controller.data["CROSSWALK"],
+                              self.controller.data["TRAFFIC_BARS"],
+                              self.controller.data["LOCATION"])
+
+            self.database.add_environment(env)
             self.controller.open_frame(home.Home)
         else:
             messagebox.showinfo(title="Attention", message="Please fill all the attributes!")

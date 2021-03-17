@@ -40,8 +40,11 @@ class Point:
         return res1 / np.math.sqrt(line.get_slope() ** 2 + 1)
 
     @staticmethod
-    def to_string(point):
-        return str(point.get_x()) + ',' + str(point.get_y())
+    def to_string(crosswalk_points):
+        x = str(crosswalk_points[0])
+        y = str(crosswalk_points[1])
+        point = [x, y]
+        return DELIMITER.join(point)
 
     @staticmethod
     def to_point(parsed):
