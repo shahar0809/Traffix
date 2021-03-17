@@ -142,7 +142,7 @@ class SQLiteDatabase(IDatabase):
         for row in record:
             for i in range(4):
                 numbers = row[i].split(",")
-                numbers = [int(x) for x in numbers]
+                numbers = [-int(x) for x in numbers]
                 crosswalk_points += [numbers]
             width = row[4]
             length = row[5]
@@ -200,7 +200,7 @@ class SQLiteDatabase(IDatabase):
     def set_crosswalk_details(self, crosswalk, env_id):
         """
         insert to the table cameras details
-        :param crosswalk_points: A list of the information we want to update to.
+        :param crosswalk: A list of the information we want to update to.
         :param env_id: The id of the environment of the crosswalk
         :return: true if the update works, false if doesn't.
         """
