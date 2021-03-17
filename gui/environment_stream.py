@@ -7,7 +7,6 @@ import gui.screen as screen
 import numpy as np
 
 
-
 class EnvironmentStream(screen.Screen):
     def __init__(self, parent, controller):
         super().__init__(parent, controller)

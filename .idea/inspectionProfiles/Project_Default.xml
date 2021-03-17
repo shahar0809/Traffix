@@ -4,6 +4,7 @@
     <inspection_tool class="PyPep8Inspection" enabled="true" level="WEAK WARNING" enabled_by_default="true">
       <option name="ignoredErrors">
         <list>
+<<<<<<< HEAD
           <option value="W29" />
           <option value="E501" />
           <option value="W29" />
@@ -95,5 +96,18 @@
         </list>
       </option>
     </inspection_tool>
+=======
+          <option value="E265" />
+        </list>
+      </option>
+    </inspection_tool>
+    <inspection_tool class="PyUnresolvedReferencesInspection" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="ignoredIdentifiers">
+        <list>
+          <option value="queue.Queue.append" />
+        </list>
+      </option>
+    </inspection_tool>
+>>>>>>> 9569514cdd6146808539edf31a4b71419337ea58
   </profile>
 </component>
