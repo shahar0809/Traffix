@@ -5,6 +5,7 @@ from queue import Queue
 import cv2
 import gui.screen as screen
 import numpy as np
+import os
 
 
 class EnvironmentStream(screen.Screen):
@@ -12,9 +13,19 @@ class EnvironmentStream(screen.Screen):
         super().__init__(parent, controller)
 
         # Defining indications
-        self.green_light = self.convert_image(cv2.imread('..\\resources\\green.png'))
-        self.red_light = self.convert_image(cv2.imread('..\\resources\\red.png'))
-        light_wid, light_height, channel = cv2.imread('..\\resources\\green.png').shape
+
+        ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+        rsrc = os.path.join(ROOT_DIR, 'resources')
+        print(os.path.join(rsrc, 'green.png'))
+
+        im = cv2.imread(os.path.join(rsrc, 'green.png'))
+        cv2.imshow('hi', im)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+
+        self.green_light = self.convert_image(cv2.imread(os.path.join(rsrc, 'green.png')))
+        self.red_light = self.convert_image(cv2.imread(os.path.join(rsrc, 'red.png')))
+        light_wid, light_height, channel = cv2.imread(os.path.join(rsrc, 'green.png')).shape
 
         # Defining queues for input and output frames
         self.frames_queue = Queue()
