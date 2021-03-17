@@ -199,7 +199,7 @@ class SQLiteDatabase(IDatabase):
 
     def set_crosswalk_details(self, crosswalk, env_id):
         """
-        insert to the table cameras details
+        update the crosswalk in environment table.
         :param crosswalk: A list of the information we want to update to.
         :param env_id: The id of the environment of the crosswalk
         :return: true if the update works, false if doesn't.
@@ -251,7 +251,7 @@ class SQLiteDatabase(IDatabase):
 
     def set_traffic_data(self, env_id, day, hour, data):
         """
-        insert to the table cameras details
+        update the loads table.
         :param data:
         :param day:
         :param hour:
@@ -274,7 +274,7 @@ class SQLiteDatabase(IDatabase):
 
     def set_traffic_bars(self, env_id, traffic_bar):
         """
-        insert to the table cameras details
+        update the traffic bars in environment table.
         :param env_id: The place where we want to update.
         :param traffic_bar: A list of the information we want to update to.
         :return: true if the update works, false if doesn't.
@@ -293,6 +293,56 @@ class SQLiteDatabase(IDatabase):
         except sqlite3.Error as e:
             cursor.close()
             return e
+
+    def set_environment_name(self, name, env_id):
+        """
+         update the name of the environment.
+         :param env_id: The place where we want to update.
+         :param name: The name that we want to update to.
+         :return: true if the update works, false if doesn't.
+         """
+        cursor = self.conn.cursor()
+        # update the name of the environment
+        sql_update = "UPDATE environments SET name = ? WHERE id = ?"
+        val = (name, env_id)
+
+        try:
+            cursor.execute(sql_update, val)
+            self.conn.commit()
+            cursor.close()
+            return True
+
+        except sqlite3.Error as e:
+            cursor.close()
+            return e
+
+    def set_location(self, location, env_id):
+        """
+         update the location of the environment.
+         :param env_id: The place where we want to update.
+         :param location: The longitude and the latitude that we want to update.
+         :return: true if the update works, false if doesn't.
+         """
+        cursor = self.conn.cursor()
+        # update the name of the environment
+        sql_update = "UPDATE environments SET longitude = ?, latitude = ? WHERE id = ?"
+        val = (location[0], location[1], env_id)
+
+        try:
+            cursor.execute(sql_update, val)
+            self.conn.commit()
+            cursor.close()
+            return True
+
+        except sqlite3.Error as e:
+            cursor.close()
+            return e
+
+    def set_environment(self,  env_id, env):
+        self.set_traffic_bars(env[0], env[4])
+        self.set_crosswalk_details(env[3], env[0])
+        self.set_environment_name(env[1], env[0])
+        self.set_location(env[5], env[0])
 
     def set_traffic_per_week(self, env_id, traffic_data):
         for day in range(AMOUNT_OF_DAYS):

@@ -3,6 +3,7 @@ import gui.screen as screen
 from utils import CameraDetails as CameraDetails
 from gui import choose_camera as choose_camera
 
+
 class NewCamera(screen.Screen):
     def __init__(self, parent, controller):
         super().__init__(parent, controller)

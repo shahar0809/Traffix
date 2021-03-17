@@ -35,6 +35,15 @@ class IDatabase:
     def set_traffic_bars(self, env_id, traffic_bar):
         raise NotImplementedError
 
+    def set_environment_name(self, name, env_id):
+        raise NotImplementedError
+
+    def set_location(self, location, env_id):
+        raise NotImplementedError
+
+    def set_environment(self, env_id, env):
+        raise NotImplementedError
+
     def get_traffic_bars(self, env_id):
         raise NotImplementedError
 
