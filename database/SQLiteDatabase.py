@@ -56,8 +56,8 @@ class SQLiteDatabase(IDatabase):
                                                     width integer NOT NULL,
                                                     length integer NOT NULL,
                                                     is_above INTEGER NOT NULL,
-                                                    longitude FLOAT NOT NULL,
-                                                    latitude FLOAT NOT NULL,
+                                                    longitude TEXT NOT NULL,
+                                                    latitude TEXT NOT NULL,
                                                     camera_id INTEGER NOT NULL,
                                                     FOREIGN KEY (camera_id) REFERENCES cameras (id)
                                                ); """
@@ -199,7 +199,7 @@ class SQLiteDatabase(IDatabase):
 
     def set_crosswalk_details(self, crosswalk, env_id):
         """
-        update the crosswalk in environment table.
+        insert to the table cameras details
         :param crosswalk: A list of the information we want to update to.
         :param env_id: The id of the environment of the crosswalk
         :return: true if the update works, false if doesn't.
@@ -251,7 +251,7 @@ class SQLiteDatabase(IDatabase):
 
     def set_traffic_data(self, env_id, day, hour, data):
         """
-        update the loads table.
+        insert to the table cameras details
         :param data:
         :param day:
         :param hour:
@@ -274,7 +274,7 @@ class SQLiteDatabase(IDatabase):
 
     def set_traffic_bars(self, env_id, traffic_bar):
         """
-        update the traffic bars in environment table.
+        insert to the table cameras details
         :param env_id: The place where we want to update.
         :param traffic_bar: A list of the information we want to update to.
         :return: true if the update works, false if doesn't.
@@ -294,80 +294,31 @@ class SQLiteDatabase(IDatabase):
             cursor.close()
             return e
 
-    def set_environment_name(self, name, env_id):
-        """
-         update the name of the environment.
-         :param env_id: The place where we want to update.
-         :param name: The name that we want to update to.
-         :return: true if the update works, false if doesn't.
-         """
-        cursor = self.conn.cursor()
-        # update the name of the environment
-        sql_update = "UPDATE environments SET name = ? WHERE id = ?"
-        val = (name, env_id)
-
-        try:
-            cursor.execute(sql_update, val)
-            self.conn.commit()
-            cursor.close()
-            return True
-
-        except sqlite3.Error as e:
-            cursor.close()
-            return e
-
-    def set_location(self, location, env_id):
-        """
-         update the location of the environment.
-         :param env_id: The place where we want to update.
-         :param location: The longitude and the latitude that we want to update.
-         :return: true if the update works, false if doesn't.
-         """
-        cursor = self.conn.cursor()
-        # update the name of the environment
-        sql_update = "UPDATE environments SET longitude = ?, latitude = ? WHERE id = ?"
-        val = (location[0], location[1], env_id)
-
-        try:
-            cursor.execute(sql_update, val)
-            self.conn.commit()
-            cursor.close()
-            return True
-
-        except sqlite3.Error as e:
-            cursor.close()
-            return e
-
-    def set_environment(self,  env_id, env):
-        self.set_traffic_bars(env[0], env[4])
-        self.set_crosswalk_details(env[3], env[0])
-        self.set_environment_name(env[1], env[0])
-        self.set_location(env[5], env[0])
-
     def set_traffic_per_week(self, env_id, traffic_data):
         for day in range(AMOUNT_OF_DAYS):
             for hour in range(AMOUNT_OF_HOURS):
                 self.set_traffic_data(env_id, day, hour, traffic_data[day][hour])
 
-    def add_environment(self, name, camera_id, crosswalk, bars):
+    def add_environment(self, name, camera_id, crosswalk, bars, location):
         cursor = self.conn.cursor()
         crosswalk_points = crosswalk.get_points()
 
         # insert environment details
-        crosswalk_points = [Point.to_string(crosswalk_points[i]) for i in range(4)]
+        points = [Point.to_string(crosswalk_points[i]) for i in range(4)]
 
         sql_insert = \
             "INSERT INTO environments (name, " \
             "crosswalk_point_1, crosswalk_point_2, crosswalk_point_3, crosswalk_point_4, " \
             "traffic_bar_low, traffic_bar_med, traffic_bar_high, " \
-            "width, length, camera_id, is_above) " \
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+            "width, length, is_above, latitude, longitude, camera_id) " \
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
         val = (name,
-               crosswalk_points[0], crosswalk_points[1], crosswalk_points[2], crosswalk_points[3],
+               points[0], points[1], points[2], points[3],
                bars[0], bars[1], bars[2],
                crosswalk.get_width(), crosswalk.get_length(),
-               camera_id, int(crosswalk.get_is_above()))
+               location[0], location[1],
+               int(crosswalk.get_is_above()), camera_id)
         try:
             cursor.execute(sql_insert, val)
             self.conn.commit()
@@ -376,6 +327,7 @@ class SQLiteDatabase(IDatabase):
 
         except sqlite3.Error as e:
             cursor.close()
+            print(e)
             return e
 
     def get_cameras(self):

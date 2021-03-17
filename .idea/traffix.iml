@@ -2,11 +2,7 @@
 <module type="PYTHON_MODULE" version="4">
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$" />
-<<<<<<< HEAD
-    <orderEntry type="jdk" jdkName="Python 3.8 (פרוייקט)" jdkType="Python SDK" />
-=======
     <orderEntry type="inheritedJdk" />
->>>>>>> 1e468c9716d7ebfc49f87ead2bfea219b4af1d5e
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="PyDocumentationSettings">
@@ -14,6 +10,6 @@
     <option name="myDocStringFormat" value="Plain" />
   </component>
   <component name="TestRunnerService">
-    <option name="PROJECT_TEST_RUNNER" value="pytest" />
+    <option name="PROJECT_TEST_RUNNER" value="Twisted Trial" />
   </component>
 </module>

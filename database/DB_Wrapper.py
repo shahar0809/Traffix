@@ -35,15 +35,6 @@ class IDatabase:
     def set_traffic_bars(self, env_id, traffic_bar):
         raise NotImplementedError
 
-    def set_environment_name(self, name, env_id):
-        raise NotImplementedError
-
-    def set_location(self, location, env_id):
-        raise NotImplementedError
-
-    def set_environment(self, env_id, env):
-        raise NotImplementedError
-
     def get_traffic_bars(self, env_id):
         raise NotImplementedError
 
@@ -56,7 +47,7 @@ class IDatabase:
     def set_traffic_per_week(self, env_id, loads_list):
         raise NotImplementedError
 
-    def add_environment(self, name, camera_id, crosswalk, bars):
+    def add_environment(self, name, camera_id, crosswalk, bars, location):
         raise NotImplementedError
 
     def get_cameras(self):
