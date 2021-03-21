@@ -14,6 +14,8 @@ class Decision:
     def __init__(self, camera, location):
         self.duration = 1 / camera.get_fps()
         self.location = location
+        self.weather_indication = ""
+        self.dist_scalar = 1
 
     def distance_change(self):
         raise NotImplementedError
@@ -39,7 +41,6 @@ class DecisionMaker(Decision):
     # This function is not supposed to consider the vehicles.
     def distance_change(self):
         """
-        ***I CHANGED THE DESCRIPTION BASED ON WHAT THIS FUNCTION NEEDS TO DO***
         This function calculates a scalar to the distance vector.
         The scalar is based on the current weather.
         :param: location: The location in which we want to get the weather
@@ -48,8 +49,7 @@ class DecisionMaker(Decision):
         """
         weather_data = weather_wrapper.WeatherAPI(self.location)
         weather = weather_wrapper.WeatherWrapper(weather_data)
-        total = weather.process_weather()
-        return total
+        self.dist_scalar, self.weather_indication = weather.process_weather()
 
     def calculate_time(self, distance, velocity, acceleration):
         """
@@ -106,7 +106,7 @@ class DecisionMaker(Decision):
             return False
 
         try:
-            calc = self.calculate_time(vehicle.distance, vehicle.velocity, vehicle.acceleration)
+            calc = self.calculate_time(vehicle.distance * self.dist_scalar, vehicle.velocity, vehicle.acceleration)
         except ZeroDivisionError:
             return None
 

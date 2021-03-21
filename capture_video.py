@@ -1,5 +1,5 @@
 import cv2
-
+import time
 
 class Capture:
     """
@@ -41,7 +41,9 @@ class Capture:
             # Exiting program if the 'q' key was pressed
             if self.handle_keys() is True: break
             self._iteration += 1
-            print(self.frames_queue)
+            print("CAPTURE")
+            time.sleep(2)
+
 
         # When everything is done, release the capture
         self.video_cap.release()

@@ -35,7 +35,7 @@ class WeatherAPI:
         response = requests.get(url)
         print(response)
         # Deserialization with JSON
-        self.data = json.loads(RESP)
+        self.data = response.json()
         return self.data
 
     def get_main_attribute(self, attribute):
@@ -68,54 +68,62 @@ class WeatherAPI:
     def get_sunset(self):
         return self.data['sys']['sunset']
 
+    def get_weather_icon(self):
+        return self.data['weather'][0]['icon']
+
 
 class WeatherWrapper:
     VEHICLE_EXTREME_WEATHER = ['Rain', 'Snow']
-    WEATHER_DESCRIPTIONS = ['light snow', 'mist', '']
-    MIN_TEMP = 12
-    MAX_TEMP = 38
+    WEATHER_DESCRIPTIONS = ['snow', 'mist', 'rain', 'thunderstorm']
     MIN_VISIBILITY = 10000
-    EXTREME_MIN_TEMP = -5
     MAX_WIND_SPEED = 3
 
     def __init__(self, weather):
         self.weather = weather
+        self.weather_indication = []
+
+        self.priorities = {'Heavy snow':0.1, 'Heavy rain':0.2, 'Light snow': 0.4, 'Low visibility' :0.3,
+                  'Thunderstorm':0.5, 'Mist':0.5, 'Rain':0.5, 'Light rain':0.7, "Night":0.8, 'Strong wind':0.8}
+
+    def process_description(self):
+        desc = self.weather.get_weather_desc().lower()
+        scalar = 1
+
+        for weather in self.priorities.keys():
+            if weather.lower() in desc:
+                self.weather_indication += [weather]
+                scalar *= self.priorities[weather]
+
+        return scalar
 
     def process_weather(self):
+        weather_indication = []
+        desc_scalar = self.process_description()
         self.weather.make_request()
-        # If result is negative, the priority is for pedestrians. Positive - vehicles
-        temp = self.weather.get_temp()
+
         wind = self.weather.get_wind_speed()
         sunset = self.weather.get_sunset()
-        sunrise = self.weather.get_sunrise()
-        extreme = self.weather.get_extreme_weather()
         visibility = self.weather.get_visibility()
-        total_priority = 0
 
-        if temp > self.MAX_TEMP:
-            total_priority += -(self.MAX_TEMP - temp) / 20
-
-        if temp < self.MIN_TEMP:
-            total_priority += (self.MIN_TEMP - temp) / 20
-
-        if temp < self.EXTREME_MIN_TEMP:
-            total_priority += self.EXTREME_MIN_TEMP - temp
+        dist_scalar = 1 * desc_scalar
 
         current_time = get_current_utc_timestamp()
+        # If the current time is after sunset -> low visibility
         if sunset < current_time:
             # Dividing by a big number because of the UTC format
-            total_priority += -(current_time - sunset) / (3 * 10**(len(str(sunset)) / 2 - 1))
-
-        if extreme in self.VEHICLE_EXTREME_WEATHER:
-            total_priority += 10
+            delta = (current_time - sunset)
+            dist_scalar *= (delta / 10**len(str(delta)))
+            weather_indication += "Night"
 
         if visibility < self.MIN_VISIBILITY:
-            total_priority += (self.MIN_VISIBILITY - visibility)
+            dist_scalar /= ((self.MIN_VISIBILITY - visibility)/1000)
+            weather_indication += ["Low visibility"]
 
         if wind > self.MAX_WIND_SPEED:
-            total_priority += (self.MAX_WIND_SPEED - wind) / 10
+            dist_scalar /= (self.MAX_WIND_SPEED - wind)
+            weather_indication += ["Strong wind"]
 
-        return total_priority
+        return dist_scalar, weather_indication
 
 
 if __name__ == '__main__':

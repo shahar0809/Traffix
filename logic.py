@@ -85,6 +85,9 @@ class System:
                 print("loop")
                 self.handle_frames(frames)
 
+    def get_weather_indication(self):
+        return self.decision_maker.weather_indication, self.decision_maker.dist_scalar
+
     def handle_frames(self, frames):
         """
         Handles a group of 3 frames and performs the next operations:
