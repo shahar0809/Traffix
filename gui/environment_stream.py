@@ -1,8 +1,8 @@
 import tkinter as tk
 from PIL import Image, ImageTk
 from logic import System
-from queue import Queue
 import cv2
+import multiprocessing as mp
 import gui.screen as screen
 import numpy as np
 import os
@@ -14,22 +14,17 @@ class EnvironmentStream(screen.Screen):
 
         # Defining indications
 
-        ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+        ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         rsrc = os.path.join(ROOT_DIR, 'resources')
         print(os.path.join(rsrc, 'green.png'))
-
-        im = cv2.imread(os.path.join(rsrc, 'green.png'))
-        cv2.imshow('hi', im)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
 
         self.green_light = self.convert_image(cv2.imread(os.path.join(rsrc, 'green.png')))
         self.red_light = self.convert_image(cv2.imread(os.path.join(rsrc, 'red.png')))
         light_wid, light_height, channel = cv2.imread(os.path.join(rsrc, 'green.png')).shape
 
         # Defining queues for input and output frames
-        self.frames_queue = Queue()
-        self.results_queue = Queue()
+        self.frames_queue = mp.Queue()
+        self.results_queue = mp.Queue()
 
         # Getting the environment selected
         self.env = self.controller.data["ENVIRONMENT"]
@@ -44,25 +39,41 @@ class EnvironmentStream(screen.Screen):
         # Initializing video feed panel widget
         width, height = self.system.capture.get_dimensions()
         blank_image = np.zeros((height, width, 3), np.uint8)
+        print(height, width)
+        blank_image = self.convert_image(blank_image)
         self.video_panel = tk.Label(image=blank_image)
         self.video_panel.image = blank_image
         self.video_panel.pack(side="left", padx=10, pady=10)
 
         # Initializing decision indication
+        print(light_height, light_wid)
         blank_image = np.zeros((light_height, light_wid, 3), np.uint8)
+        blank_image = self.convert_image(blank_image)
         self.traffic_panel = tk.Label(image=blank_image)
         self.traffic_panel.image = blank_image
         self.traffic_panel.pack(side="bottom", padx=10, pady=10)
 
+        # set a callback to handle when the window is closed
+        self.controller.wm_title("Traffix")
+        self.controller.wm_protocol("WM_DELETE_WINDOW", self.on_close)
+
         self.system.run()
+        self.handle_process = mp.Process(target=self.handle_result_frames, args=(), daemon=True)
+        self.handle_process.start()
+
+    def on_close(self):
+        self.system.on_close()
 
     @staticmethod
     def convert_image(image):
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         image = Image.fromarray(image)
-        return ImageTk.PhotoImage(image)
+        image = ImageTk.PhotoImage(image)
+        return image
 
     def handle_result_frames(self):
-        while True:
+        while not self.system.stop_event.is_set():
+            print("hello")
             (res_frame, decision) = self.results_queue.get()
 
             # Change video feed frame

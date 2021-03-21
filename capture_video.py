@@ -23,24 +23,25 @@ class Capture:
         self._curr_frames = []
         self.video_cap = None
 
-    def capture_frames(self):
+    def capture_frames(self, stop_event):
         """
         Gets the frames from the video source (Pure virtual function).
         @:param self: Instance of the Capture class
         @:return: None
         """
         print("capture frame")
-        while True:
+        self.assign_video_cap()
+
+        while not stop_event.is_set():
             # Capture frame-by-frame
             ret, frame = self.video_cap.read()
             if ret is False: break
-
-            cv2.imshow('Traffix', frame)
-            self.add_frame(frame, self.frames_queue)
+            self.add_frame(frame)
 
             # Exiting program if the 'q' key was pressed
-            if self.handle_keys(self.frames_queue) is True: break
+            if self.handle_keys() is True: break
             self._iteration += 1
+            print(self.frames_queue)
 
         # When everything is done, release the capture
         self.video_cap.release()
@@ -74,7 +75,7 @@ class Capture:
         else:
             return self.frames_queue.get()
 
-    def handle_keys(self, frames_queue):
+    def handle_keys(self):
         """
         Handles events of keys being pressed.
         @:keyword: If 'g' is pressed: The function 'get_frames' gets called.
@@ -88,7 +89,7 @@ class Capture:
         # Getting the current group of frames
         if pressed_key == ord('g'):
             try:
-                print(len(self.get_frames(frames_queue)))
+                print(len(self.get_frames()))
 
             except Exception as e:
                 print(e), print()
@@ -96,6 +97,7 @@ class Capture:
         return pressed_key == ord('q')
 
     def assign_dimensions(self):
+        print(self.video_cap.isOpened())
         if self.video_cap.isOpened():
             self.width = int(self.video_cap.get(cv2.CAP_PROP_FRAME_WIDTH))
             self.height = int(self.video_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
@@ -103,18 +105,32 @@ class Capture:
     def get_dimensions(self):
         return self.width, self.height
 
+    def get_param(self):
+        raise NotImplementedError
+
+    def assign_video_cap(self):
+        self.video_cap = cv2.VideoCapture(self.get_param())
+
+
 class LiveCapture(Capture):
     def __init__(self, frames_queue, result_queue, camera_index):
         super().__init__(frames_queue, result_queue)
         self.camera_index = camera_index
-        self.video_cap = cv2.VideoCapture(self.camera_index)
+        self.assign_video_cap()
         self.assign_dimensions()
+        self.video_cap.release()
+
+    def get_param(self):
+        return self.camera_index
 
 
 class StaticCapture(Capture):
     def __init__(self, frames_queue, result_queue, video_path):
         super().__init__(frames_queue, result_queue)
         self.video_path = video_path
-        self.video_cap = cv2.VideoCapture(self.video_path)
+        self.assign_video_cap()
         self.assign_dimensions()
+        self.video_cap.release()
 
+    def get_param(self):
+        return self.video_path

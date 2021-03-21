@@ -6,7 +6,7 @@ from queue import Queue
 import vehicles_detection.yolo_detection as yolo
 import capture_video as cap
 import measurements_calculations.kinematics_calculation as kinematics
-import database.SQLiteDatabase as database
+import multiprocessing as mp
 import utils
 import vehicles_detection.centroid_tracking as tracker
 import decision_making.decision_making as decision_making
@@ -46,7 +46,7 @@ class System:
         self.crosswalk = self.env.get_crosswalk_details()
 
         # Initializing the frames capturing module
-        self.capture = cap.LiveCapture(self.frames_queue, self.result_queue, 0)
+        self.capture = cap.LiveCapture(self.frames_queue, self.result_queue, -1)
 
         # Initializing an object tracker
         self.tracker = tracker.CentroidTracker(self.crosswalk)
@@ -62,16 +62,28 @@ class System:
         # Initializing a decision maker
         self.decision_maker = decision_making.DecisionMaker(self.camera, [32.793542374788785, 34.98896391998108])
 
+        # Init thread of capturing frames
+        self.stop_event = mp.Event()
+        self.cap_thread = mp.Process(target=self.capture.capture_frames, args=(self.stop_event,), daemon=True)
+        self.frames_thread = mp.Process(target=self.pop_frames, args=(), daemon=True)
+
+    def on_close(self):
+        self.stop_event.set()
+
     def run(self):
         """
         Manages the order of the operations, and manages the queues in the program.
         :return: None
         """
-        self.capture.capture_frames(self.frames_queue)
+        self.cap_thread.start()
+        self.frames_thread.start()
 
-        while self.frames_queue.qsize() > 0:
-            frames = self.frames_queue.get()
-            self.handle_frames(frames)
+    def pop_frames(self):
+        while not self.stop_event.is_set():
+            if self.frames_queue.qsize() > 0:
+                frames = self.frames_queue.get()
+                print("loop")
+                self.handle_frames(frames)
 
     def handle_frames(self, frames):
         """
@@ -90,7 +102,8 @@ class System:
         vehicles = []
 
         # For each frame, apply object detection
-        for i in range(cap.Capture.GROUP_SIZE):
+
+        for i in range(self.capture.GROUP_SIZE):
             boxes_result, frame = self.apply_detection(frames[i])
             # Append results of the frame to the lists
             boxes.append(boxes_result)

@@ -168,8 +168,8 @@ class SQLiteDatabase(IDatabase):
             env_id = row[0]
             name = row[1]
             bars = [row[6], row[7], row[8]]
-            camera_id = row[11]
-            location = (row[13], row[14])
+            camera_id = row[14]
+            location = (row[12], row[13])
 
             return utils.Environment(name, camera_id, crosswalk, bars, location, env_id)
 
@@ -317,8 +317,9 @@ class SQLiteDatabase(IDatabase):
                points[0], points[1], points[2], points[3],
                bars[0], bars[1], bars[2],
                crosswalk.get_width(), crosswalk.get_length(),
+               int(crosswalk.get_is_above()),
                location[0], location[1],
-               int(crosswalk.get_is_above()), camera_id)
+               camera_id)
         try:
             cursor.execute(sql_insert, val)
             self.conn.commit()

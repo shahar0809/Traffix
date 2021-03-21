@@ -48,19 +48,18 @@ class MarkCrosswalk(screen.Screen):
         # Adding the image
         cap = cv2.VideoCapture(self.camera.get_camera_index())
         is_read, frame = cap.read()
-        if not is_read:
-            self.destroy_screen()
+        cap.release()
+        if is_read:
+            self.clone = frame.copy()
+            self.marked_image = frame.copy()
+            self.image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            # Convert the image to PIL format
+            self.image = Image.fromarray(self.image)
 
-        self.clone = frame.copy()
-        self.marked_image = frame.copy()
-        self.image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        # Convert the image to PIL format
-        self.image = Image.fromarray(self.image)
-
-        self.image = ImageTk.PhotoImage(self.image)
-        self.canvas.create_image(0, 0, image=self.image, anchor="nw")
-        self.canvas.config(scrollregion=self.canvas.bbox(tk.ALL))
-        self.canvas.bind("<Button 1>", self.capture_mouse_click)
+            self.image = ImageTk.PhotoImage(self.image)
+            self.canvas.create_image(0, 0, image=self.image, anchor="nw")
+            self.canvas.config(scrollregion=self.canvas.bbox(tk.ALL))
+            self.canvas.bind("<Button 1>", self.capture_mouse_click)
 
     """ The following functions relate to capturing the points of the crosswalk """
 

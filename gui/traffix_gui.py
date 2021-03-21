@@ -47,15 +47,14 @@ class TraffixGUI(tk.Tk):
             self.data[key] = None
 
 
-
 def main():
     app = TraffixGUI()
     w = 800
     h = 650
 
     # get screen width and height
-    ws = app.winfo_screenwidth() # width of the screen
-    hs = app.winfo_screenheight() # height of the screen
+    ws = app.winfo_screenwidth()  # width of the screen
+    hs = app.winfo_screenheight()  # height of the screen
 
     # calculate x and y coordinates for the Tk root window
     x = (ws / 2) - (w / 2)
