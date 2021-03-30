@@ -4,22 +4,16 @@ from logic import System
 import cv2
 import multiprocessing as mp
 import gui.screen as screen
-import numpy as np
-import os
+import threading
+from gui import tk_video_stream, update_environment
 
 
 class EnvironmentStream(screen.Screen):
     def __init__(self, parent, controller):
         super().__init__(parent, controller)
+        self.stop_event = threading.Event()
         self.image = None
         self.controller.attributes('-zoomed', False)
-
-        # Defining indications
-        self.root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        self.resources = os.path.join(self.root_dir, 'resources')
-
-        self.green_light = self.convert_image(cv2.imread(os.path.join(self.resources, 'green.png')))
-        self.red_light = self.convert_image(cv2.imread(os.path.join(self.resources, 'red.png')))
 
         # Defining queues for input and output frames
         self.frames_queue = mp.Queue()
@@ -28,8 +22,14 @@ class EnvironmentStream(screen.Screen):
         # Getting the environment selected
         self.env = self.controller.data["ENVIRONMENT"]
 
+        tk.Button(self, text="Back", font=(self.default_font, 15),
+                  command=self.go_back).pack(side="top", anchor="e")
+
+        tk.Button(self, text="Update environment", font=(self.default_font, 20),
+          command=self.update_env).pack(anchor="w", side="top")
+
         # Adding title label
-        tk.Label(self, text=self.env.get_name(), font=(self.default_font, 45)).pack(pady=20)
+        tk.Label(self, text=self.env.get_name(), font=(self.default_font, 45)).pack(pady=10)
 
         # Initializing the logic module
         self.system = System(self.frames_queue, self.results_queue, self.env, self.database)
@@ -39,16 +39,21 @@ class EnvironmentStream(screen.Screen):
         self.traffic_panel = None
         self.weather_panel = None
 
-        # set a callback to handle when the window is closed
-        self.controller.wm_title("Traffix")
-        self.controller.wm_protocol("WM_DELETE_WINDOW", self.on_close)
-
         self.system.run()
-        self.handle_process = mp.Process(target=self.handle_result_frames, args=(), daemon=True)
-        self.handle_process.start()
+        self.vs = tk_video_stream.GuiVideoStream(controller, self.results_queue, self.stop_event)
 
     def on_close(self):
+        self.stop_event.set()
         self.system.on_close()
+
+    def update_env(self):
+        self.on_close()
+        self.controller.open_frame(update_environment.UpdateEnvironment)
+
+    def go_back(self):
+        self.on_close()
+        self.destroy_screen()
+
 
     @staticmethod
     def convert_image(image):

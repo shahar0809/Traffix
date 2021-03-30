@@ -1,6 +1,7 @@
 import cv2
 import time
 
+
 class Capture:
     """
     The Capture class manages the frames captured from the video source.
@@ -31,7 +32,6 @@ class Capture:
         """
         print("capture frame")
         self.assign_video_cap()
-
         while not stop_event.is_set():
             # Capture frame-by-frame
             ret, frame = self.video_cap.read()
@@ -43,7 +43,6 @@ class Capture:
             self._iteration += 1
             print("CAPTURE")
             time.sleep(2)
-
 
         # When everything is done, release the capture
         self.video_cap.release()
@@ -99,7 +98,7 @@ class Capture:
         return pressed_key == ord('q')
 
     def assign_dimensions(self):
-        print(self.video_cap.isOpened())
+        print("is:" + str(self.video_cap.isOpened()))
         if self.video_cap.isOpened():
             self.width = int(self.video_cap.get(cv2.CAP_PROP_FRAME_WIDTH))
             self.height = int(self.video_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
@@ -111,16 +110,18 @@ class Capture:
         raise NotImplementedError
 
     def assign_video_cap(self):
-        self.video_cap = cv2.VideoCapture(self.get_param())
+        try:
+            self.video_cap = cv2.VideoCapture(0)
+            if not self.video_cap.isOpened():
+                print("Error opening video")
+        except Exception as e:
+            print(e)
 
 
 class LiveCapture(Capture):
     def __init__(self, frames_queue, result_queue, camera_index):
         super().__init__(frames_queue, result_queue)
         self.camera_index = camera_index
-        self.assign_video_cap()
-        self.assign_dimensions()
-        self.video_cap.release()
 
     def get_param(self):
         return self.camera_index
@@ -130,9 +131,6 @@ class StaticCapture(Capture):
     def __init__(self, frames_queue, result_queue, video_path):
         super().__init__(frames_queue, result_queue)
         self.video_path = video_path
-        self.assign_video_cap()
-        self.assign_dimensions()
-        self.video_cap.release()
 
     def get_param(self):
         return self.video_path

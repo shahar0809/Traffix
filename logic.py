@@ -1,6 +1,8 @@
 # Import necessary libraries
 import cv2 as cv
 from queue import Queue
+from database import SQLiteDatabase
+from vehicles_detection import auto_detection
 
 # Modules
 import vehicles_detection.yolo_detection as yolo
@@ -46,10 +48,11 @@ class System:
         self.crosswalk = self.env.get_crosswalk_details()
 
         # Initializing the frames capturing module
-        self.capture = cap.LiveCapture(self.frames_queue, self.result_queue, -1)
+        self.capture = cap.LiveCapture(self.frames_queue, self.result_queue, self.camera.get_camera_index())
 
         # Initializing an object tracker
         self.tracker = tracker.CentroidTracker(self.crosswalk)
+        self.load_detector = auto_detection.TrafficDetector()
 
         # Initializing the vehicle detection module
         threshold = 0.3
@@ -60,14 +63,15 @@ class System:
         self.calculator = kinematics.KinematicsCalculation(self.camera, self.crosswalk)
 
         # Initializing a decision maker
-        self.decision_maker = decision_making.DecisionMaker(self.camera, [32.793542374788785, 34.98896391998108])
+        self.decision_maker = decision_making.DecisionMaker(self.camera, self.env.get_location())
 
         # Init thread of capturing frames
         self.stop_event = mp.Event()
-        self.cap_thread = mp.Process(target=self.capture.capture_frames, args=(self.stop_event,), daemon=True)
-        self.frames_thread = mp.Process(target=self.pop_frames, args=(), daemon=True)
+        self.cap_thread = mp.Process(target=self.capture.capture_frames, args=(self.stop_event,))
+        self.frames_thread = mp.Process(target=self.pop_frames, args=())
 
     def on_close(self):
+        print("close")
         self.stop_event.set()
 
     def run(self):
@@ -139,7 +143,8 @@ class System:
                     vehicles.append(self.calculator.get_measurements(vehicle_boxes, object_id))
 
         # Putting the frame with the bounding boxes in the result queue
-        decision = self.decision_maker.make_decision(vehicles)
+        load_level = self.load_detector.detect_traffic_level(vehicles, self.env.get_bars())
+        decision = self.decision_maker.make_decision(vehicles, load_level)
         self.result_queue.put((self.make_frame(vehicles, result_frames[1]), decision))
 
     def apply_detection(self, frame):
@@ -170,5 +175,7 @@ class System:
 
 
 if __name__ == '__main__':
-    sys = System(1, 1, 'ttt.mp4')
+    fq = mp.Queue()
+    rq = mp.Queue()
+    sys = System(fq, rq, 1, SQLiteDatabase.SQLiteDatabase('database//traffixDB.db'))
     sys.run()
