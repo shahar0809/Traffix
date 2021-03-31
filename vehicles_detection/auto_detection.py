@@ -1,16 +1,21 @@
-import database.DB_Wrapper as DB
 from utils import LOW_BAR, MEDIUM_BAR, HIGH_BAR, LOW_LEVEL, MEDIUM_LEVEL, HIGH_LEVEL
 
+
 class TrafficDetector:
-    def __init__(self, boxes):
+    def __init__(self):
+        self.boxes = None
+
+    def detect_traffic_level(self, boxes, traffic_bars):
         self.boxes = boxes
-        self.db_connection = DB.SqliteDatabase()
+        num_of_vehicles = len(self.boxes)
 
-    def detect_traffic_level(self, env_id):
-        traffic_bars = self.db_connection.get_traffic_bars(env_id)
-        traffic_level = None
-
-        if len(self.boxes) <= traffic_bars[LOW_BAR]:
+        if num_of_vehicles <= traffic_bars[LOW_BAR]:
             traffic_level = LOW_LEVEL
-
+        elif traffic_bars[LOW_BAR] < num_of_vehicles <= traffic_bars[MEDIUM_BAR]:
+            traffic_level = LOW_BAR
+        elif traffic_bars[MEDIUM_BAR] < num_of_vehicles <= traffic_bars[HIGH_LEVEL]:
+            traffic_level = MEDIUM_LEVEL
         else:
+            traffic_level = HIGH_LEVEL
+
+        return traffic_level

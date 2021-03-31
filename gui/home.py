@@ -22,7 +22,7 @@ class Home(screen.Screen):
             self.buttons[env_id] = \
                 tk.Button(self,
                           text=env.get_name(),
-                          command=lambda: self.choose_env(env_id),
+                          command=lambda x=env_id: self.choose_env(x),
                           font=(self.default_font, 20))
             self.buttons[env.get_id()].pack(pady=10)
 

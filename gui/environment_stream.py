@@ -4,23 +4,16 @@ from logic import System
 import cv2
 import multiprocessing as mp
 import gui.screen as screen
-import numpy as np
-import os
+import threading
+from gui import tk_video_stream, update_environment
 
 
 class EnvironmentStream(screen.Screen):
     def __init__(self, parent, controller):
         super().__init__(parent, controller)
-
-        # Defining indications
-
-        ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        rsrc = os.path.join(ROOT_DIR, 'resources')
-        print(os.path.join(rsrc, 'green.png'))
-
-        self.green_light = self.convert_image(cv2.imread(os.path.join(rsrc, 'green.png')))
-        self.red_light = self.convert_image(cv2.imread(os.path.join(rsrc, 'red.png')))
-        light_wid, light_height, channel = cv2.imread(os.path.join(rsrc, 'green.png')).shape
+        self.stop_event = threading.Event()
+        self.image = None
+        self.controller.attributes('-zoomed', False)
 
         # Defining queues for input and output frames
         self.frames_queue = mp.Queue()
@@ -29,40 +22,38 @@ class EnvironmentStream(screen.Screen):
         # Getting the environment selected
         self.env = self.controller.data["ENVIRONMENT"]
 
+        tk.Button(self, text="Back", font=(self.default_font, 15),
+                  command=self.go_back).pack(side="top", anchor="e")
+
+        tk.Button(self, text="Update environment", font=(self.default_font, 20),
+          command=self.update_env).pack(anchor="w", side="top")
+
         # Adding title label
-        tk.Label(self, text=self.env.get_name(), font=(self.default_font, 45)).pack(pady=20)
+        tk.Label(self, text=self.env.get_name(), font=(self.default_font, 45)).pack(pady=10)
 
         # Initializing the logic module
-        self.system = System(self.frames_queue, self.results_queue,
-                             self.env, self.database)
+        self.system = System(self.frames_queue, self.results_queue, self.env, self.database)
 
-        # Initializing video feed panel widget
-        width, height = self.system.capture.get_dimensions()
-        blank_image = np.zeros((height, width, 3), np.uint8)
-        print(height, width)
-        blank_image = self.convert_image(blank_image)
-        self.video_panel = tk.Label(image=blank_image)
-        self.video_panel.image = blank_image
-        self.video_panel.pack(side="left", padx=10, pady=10)
-
-        # Initializing decision indication
-        print(light_height, light_wid)
-        blank_image = np.zeros((light_height, light_wid, 3), np.uint8)
-        blank_image = self.convert_image(blank_image)
-        self.traffic_panel = tk.Label(image=blank_image)
-        self.traffic_panel.image = blank_image
-        self.traffic_panel.pack(side="bottom", padx=10, pady=10)
-
-        # set a callback to handle when the window is closed
-        self.controller.wm_title("Traffix")
-        self.controller.wm_protocol("WM_DELETE_WINDOW", self.on_close)
+        # Initializing video feed panel widget an
+        self.video_panel = None
+        self.traffic_panel = None
+        self.weather_panel = None
 
         self.system.run()
-        self.handle_process = mp.Process(target=self.handle_result_frames, args=(), daemon=True)
-        self.handle_process.start()
+        self.vs = tk_video_stream.GuiVideoStream(controller, self.results_queue, self.stop_event)
 
     def on_close(self):
+        self.stop_event.set()
         self.system.on_close()
+
+    def update_env(self):
+        self.on_close()
+        self.controller.open_frame(update_environment.UpdateEnvironment)
+
+    def go_back(self):
+        self.on_close()
+        self.destroy_screen()
+
 
     @staticmethod
     def convert_image(image):
@@ -71,51 +62,40 @@ class EnvironmentStream(screen.Screen):
         image = ImageTk.PhotoImage(image)
         return image
 
+    def handle_video_panel(self):
+        self.image = self.convert_image(self.image)
+        if self.video_panel is None:
+            self.video_panel = tk.Label(image=self.image)
+            self.video_panel.image = self.image
+            self.video_panel.pack(side="left", padx=10, pady=10)
+        else:
+            self.video_panel.configure(image=self.image)
+            self.video_panel.image = self.image
+
+    def handle_traffic_light(self, decision):
+        # Change light indication
+        if decision:
+            self.image = self.green_light
+        else:
+            self.image = self.red_light
+
+        if self.traffic_panel is None:
+            self.traffic_panel = tk.Label(image=self.image)
+            self.traffic_panel.image = self.image
+            self.traffic_panel.pack(side="left", padx=10, pady=10)
+        else:
+            self.traffic_panel.configure(image=self.image)
+            self.traffic_panel.image = self.image
+
     def handle_result_frames(self):
         while not self.system.stop_event.is_set():
             print("hello")
             (res_frame, decision) = self.results_queue.get()
+            print("DECISION")
+            print(decision)
 
             # Change video feed frame
-            res_frame = self.convert_image(res_frame)
-            self.video_panel.configure(image=res_frame)
-            self.video_panel.image = res_frame
+            self.image = res_frame
+            self.handle_video_panel()
 
-            # Change light indication
-            if decision:
-                indication = self.green_light
-            else:
-                indication = self.red_light
-
-            self.traffic_panel.configure(image=indication)
-            self.traffic_panel.image = indication
-
-
-class CustomCapture:
-    def __init__(self, app, video_source=0):
-        # Open the video source
-        self.vid = cv2.VideoCapture(video_source)
-        self.app = app
-        if not self.vid.isOpened():
-            raise ValueError("Unable to open video source", video_source)
-
-        # Get video source width and height
-        self.width = self.vid.get(cv2.CAP_PROP_FRAME_WIDTH)
-        self.height = self.vid.get(cv2.CAP_PROP_FRAME_HEIGHT)
-
-    # Release the video source when the object is destroyed
-    def __del__(self):
-        if self.vid.isOpened():
-            self.vid.release()
-        self.app.mainloop()
-
-    def get_frame(self):
-        if self.vid.isOpened():
-            ret, frame = self.vid.read()
-            if ret:
-                # Return a boolean success flag and the current frame converted to BGR
-                return ret, cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            else:
-                return ret, None
-        else:
-            return False, None
+            self.handle_traffic_light(decision)

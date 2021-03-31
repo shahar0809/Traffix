@@ -14,6 +14,8 @@ class Decision:
     def __init__(self, camera, location):
         self.duration = 1 / camera.get_fps()
         self.location = location
+        self.weather_indication = ""
+        self.dist_scalar = 1
 
     def distance_change(self):
         raise NotImplementedError
@@ -21,7 +23,7 @@ class Decision:
     def calculate_time(self, distance, velocity, acceleration):
         raise NotImplementedError
 
-    def make_decision(self, vehicles):
+    def make_decision(self, vehicles, load_level):
         raise NotImplementedError
 
     def make_decision_for_vehicle(self, vehicle):
@@ -32,14 +34,8 @@ class DecisionMaker(Decision):
     def __init__(self, camera, location):
         super().__init__(camera, location)
 
-    # TODO: this function doesn't get the weather - it changes the distance based on the weather
-    # so change the name so that it fits
-    # Also - it doesn't look at one car - it looks at the weather, and if it's risky, changes
-    # the distance of all vehicles. The return should be a value that's put into all distances.
-    # This function is not supposed to consider the vehicles.
-    def distance_change(self, distance):
+    def distance_change(self):
         """
-        ***I CHANGED THE DESCRIPTION BASED ON WHAT THIS FUNCTION NEEDS TO DO***
         This function calculates a scalar to the distance vector.
         The scalar is based on the current weather.
         :param: location: The location in which we want to get the weather
@@ -48,9 +44,7 @@ class DecisionMaker(Decision):
         """
         weather_data = weather_wrapper.WeatherAPI(self.location)
         weather = weather_wrapper.WeatherWrapper(weather_data)
-        scalar = weather.process_weather()
-        distance *= scalar
-        return distance
+        self.dist_scalar, self.weather_indication = weather.process_weather()
 
     def calculate_time(self, distance, velocity, acceleration):
         """
@@ -78,7 +72,7 @@ class DecisionMaker(Decision):
             x2 = (-b - disc) / (2 * a)
             return x1.real, x2.real
 
-    def make_decision(self, vehicles):
+    def make_decision(self, vehicles, load_level):
         """
         The function makes a decision for vehicles based on environment variables.
         :param vehicles: list of vehicles.
@@ -107,8 +101,7 @@ class DecisionMaker(Decision):
             return False
 
         try:
-            distance = self.distance_change(vehicle.distance)
-            calc = self.calculate_time(distance, vehicle.velocity, vehicle.acceleration)
+            calc = self.calculate_time(vehicle.distance * self.dist_scalar, vehicle.velocity, vehicle.acceleration)
         except ZeroDivisionError:
             return None
 

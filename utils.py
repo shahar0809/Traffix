@@ -134,6 +134,9 @@ class Environment:
     def set_crosswalk_details(self, crosswalk):
         self.crosswalk = crosswalk
 
+    def get_bars(self):
+        return self.bars
+
     def get_low_bar(self):
         return self.bars[LOW_BAR]
 
