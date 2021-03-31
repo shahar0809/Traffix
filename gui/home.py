@@ -1,6 +1,8 @@
 import tkinter as tk
 import gui.screen as screen
 from gui import new_environment, environment_stream
+from tkinter.ttk import *
+event2canvas = lambda e, c: (c.canvasx(e.x), c.canvasy(e.y))
 
 
 class Home(screen.Screen):

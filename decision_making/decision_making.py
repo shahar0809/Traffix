@@ -37,7 +37,7 @@ class DecisionMaker(Decision):
     # Also - it doesn't look at one car - it looks at the weather, and if it's risky, changes
     # the distance of all vehicles. The return should be a value that's put into all distances.
     # This function is not supposed to consider the vehicles.
-    def distance_change(self):
+    def distance_change(self, distance):
         """
         ***I CHANGED THE DESCRIPTION BASED ON WHAT THIS FUNCTION NEEDS TO DO***
         This function calculates a scalar to the distance vector.
@@ -48,8 +48,9 @@ class DecisionMaker(Decision):
         """
         weather_data = weather_wrapper.WeatherAPI(self.location)
         weather = weather_wrapper.WeatherWrapper(weather_data)
-        total = weather.process_weather()
-        return total
+        scalar = weather.process_weather()
+        distance *= scalar
+        return distance
 
     def calculate_time(self, distance, velocity, acceleration):
         """
@@ -106,7 +107,8 @@ class DecisionMaker(Decision):
             return False
 
         try:
-            calc = self.calculate_time(vehicle.distance, vehicle.velocity, vehicle.acceleration)
+            distance = self.distance_change(vehicle.distance)
+            calc = self.calculate_time(distance, vehicle.velocity, vehicle.acceleration)
         except ZeroDivisionError:
             return None
 
