@@ -46,7 +46,6 @@ class DecisionMaker(Decision):
         weather = weather_wrapper.WeatherWrapper(weather_data)
         self.dist_scalar, self.weather_indication = weather.process_weather()
 
-
     def calculate_time(self, distance, velocity, acceleration):
         """
         The function will calculate the time until the vehicle reaches the crosswalk with the distance, velocity and the acceleration.
