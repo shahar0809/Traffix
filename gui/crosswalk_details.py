@@ -12,6 +12,9 @@ class CrosswalkDetails(screen.Screen):
 
         tk.Label(self, text="Crosswalk details", font=(self.default_font, 45)).grid(row=0, column=0, columnspan=2)
 
+        tk.Button(self, text="Back", command=self.back,
+                  font=(self.default_font, 15)).grid(row=0, column=0, sticky='e')
+
         tk.Label(self, text="Width (cm):", font=(self.default_font, 20)). \
             grid(row=1, column=0, padx=30, sticky='w')
         self.width_box = tk.Entry(self, font=(self.default_font, 20))

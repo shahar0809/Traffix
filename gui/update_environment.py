@@ -1,30 +1,29 @@
 import tkinter as tk
 from tkinter import messagebox
-
+from gui import choose_camera, crosswalk_details, set_traffic_bars, choose_location, home
 import gui.screen as screen
+from utils import Environment
 
 
 class UpdateEnvironment(screen.Screen):
     def __init__(self, parent, controller):
         super().__init__(parent, controller)
+        
+        self.env_id = self.controller.data["ENV_ID"]
 
         self.columnconfigure((0, 1), weight=1)
         self.rowconfigure((0, 1, 2, 3, 4, 5, 6, 7), weight=1)
 
         tk.Label(self, text="Update environment", font=(self.default_font, 45)).grid(row=0, column=0,
                                                                                        columnspan=2)
+        tk.Button(self, text="Back", command=self.go_back,
+                  font=(self.default_font, 15)).grid(row=0, column=0, padx=(10, 0), ipadx=2)
 
         # Name section
         tk.Label(self, text="Name:", font=(self.default_font, 16)). \
             grid(row=1, column=0, padx=30, sticky='w')
         self.name = tk.Entry(self, font=(self.default_font, 20))
         self.name.grid(row=1, column=1, padx=(0, 30), ipadx=8)
-
-        # Env id section
-        tk.Label(self, text="ID of environment:", font=(self.default_font, 16)). \
-            grid(row=2, column=0, padx=30, sticky='w')
-        self.id = tk.Entry(self, font=(self.default_font, 20))
-        self.id.grid(row=2, column=1, padx=(0, 30), ipadx=8)
 
         # Camera section
         tk.Label(self, text="Choose camera:", font=(self.default_font, 16)). \
@@ -53,6 +52,9 @@ class UpdateEnvironment(screen.Screen):
         tk.Button(self, text="DONE", font=(self.default_font, 30), command=self.update_environment). \
             grid(row=7, column=0, columnspan=2, pady=30)
 
+    def go_back(self):
+        self.destroy_screen()
+
     def open_choose_camera(self):
         self.controller.open_frame(choose_camera.ChooseCamera)
 
@@ -69,22 +71,22 @@ class UpdateEnvironment(screen.Screen):
         self.controller.open_frame(choose_location.ChooseLocation)
 
     def update_environment(self):
-        attributes = [self.controller.data["ID"],
-                      self.controller.data["CAMERA"],
+        attributes = [self.controller.data["CAMERA"],
                       self.controller.data["CROSSWALK"],
                       self.controller.data["TRAFFIC_BARS"],
                       self.controller.data["LOCATION"]]
 
-        is_env_ready = self.name.get() == ""
+        is_env_ready = self.name.get() != ""
+        print(attributes)
         for attribute in attributes:
             if attribute is None:
                 is_env_ready = False
 
-        if is_env_ready:
-            self.database(str(self.name.get()), self.controller.data["CAMERA"].get_id(),
-                                  self.controller.data["CROSSWALK"], self.controller.data["TRAFFIC_BARS"],
-                                  self.controller.data["LOCATION"])
+        env = Environment(str(self.name.get()), self.controller.data["CAMERA"].get_id(),
+                          self.controller.data["CROSSWALK"], self.controller.data["TRAFFIC_BARS"],
+                          self.controller.data["LOCATION"], self.env_id)
 
+        if is_env_ready:
             self.database.set_environment(env)
             self.controller.open_frame(home.Home)
         else:

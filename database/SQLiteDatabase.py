@@ -354,6 +354,43 @@ class SQLiteDatabase(IDatabase):
 
         return envs
 
+    def set_environment(self, env):
+        cursor = self.conn.cursor()
+        crosswalk_points = env.get_crosswalk_details().get_points()
+
+        # insert environment details
+        points = [Point.to_string(crosswalk_points[i]) for i in range(4)]
+
+        sql_insert = \
+            "UPDATE environments SET " \
+            "name = ?, " \
+            "crosswalk_point_1 = ?, crosswalk_point_2 = ?, crosswalk_point_3 = ?, crosswalk_point_4 = ?, " \
+            "traffic_bar_low = ?, traffic_bar_med = ?, traffic_bar_high = ?, " \
+            "width = ?, length = ?, is_above = ?, latitude = ?, longitude = ?, camera_id = ? " \
+            "WHERE id = ?"
+
+        bars = env.get_bars()
+        crosswalk = env.get_crosswalk_details()
+        location = env.get_location()
+
+        val = (env.get_name(),
+               points[0], points[1], points[2], points[3],
+               bars[0], bars[1], bars[2],
+               crosswalk.get_width(), crosswalk.get_length(),
+               int(crosswalk.get_is_above()),
+               location[0], location[1],
+               env.get_camera_id(), env.get_id())
+        try:
+            cursor.execute(sql_insert, val)
+            self.conn.commit()
+            cursor.close()
+            return True
+
+        except sqlite3.Error as e:
+            cursor.close()
+            print(e)
+            return e
+
 
 def main():
     database = SQLiteDatabase()

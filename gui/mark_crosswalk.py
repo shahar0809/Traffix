@@ -19,6 +19,8 @@ class MarkCrosswalk(screen.Screen):
         # Title
         tk.Label(self, text="Mark crosswalk", font=(self.default_font, 45)).pack()
 
+        tk.Button(self, text="Back", command=self.go_back,
+                  font=(self.default_font, 15)).pack(side="left")
         # Instructions
         tk.Label(self, text="Mark the crosswalk in the frame by choosing its 4 corners",
                  font=(self.default_font, 16)).pack(pady=10)
@@ -46,7 +48,7 @@ class MarkCrosswalk(screen.Screen):
         frame.pack(fill=tk.BOTH, expand=1)
 
         # Adding the image
-        cap = cv2.VideoCapture(self.camera.get_camera_index())
+        cap = cv2.VideoCapture("//home//magshimim//Videos//traffic.mp4")
         is_read, frame = cap.read()
         cap.release()
         if is_read:
@@ -60,6 +62,9 @@ class MarkCrosswalk(screen.Screen):
             self.canvas.create_image(0, 0, image=self.image, anchor="nw")
             self.canvas.config(scrollregion=self.canvas.bbox(tk.ALL))
             self.canvas.bind("<Button 1>", self.capture_mouse_click)
+
+    def go_back(self):
+        self.destroy_screen()
 
     """ The following functions relate to capturing the points of the crosswalk """
 

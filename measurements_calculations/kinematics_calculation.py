@@ -47,4 +47,6 @@ class KinematicsCalculation(measurements.VehicleMeasure):
             else:
                 dist.append(point_obj.dist_from_line(line1))
 
+        print("dist")
+        print(dist)
         return min(dist) / self.pixels_ratio

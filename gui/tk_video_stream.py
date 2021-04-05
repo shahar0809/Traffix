@@ -12,17 +12,17 @@ import os
 
 
 class GuiVideoStream:
-    def __init__(self, controller, q, stopEvent):
+    def __init__(self, frame, root, q, stopEvent):
+        self.tkFrame = frame
         self.frame = None
         self.thread = None
-        self.stopEvent = None
+        self.stopEvent = stopEvent
         self.decision = False
         self.traffic_indication = None
         self.q = q
-        self.stopEvent = stopEvent
 
         # initialize the root window and image panel
-        self.root = controller
+        self.root = root
         self.panel = None
         self.traffic_panel = None
 
@@ -45,8 +45,8 @@ class GuiVideoStream:
         self.thread.start()
 
         # set a callback to handle when the window is closed
-        self.root.wm_title("PyImageSearch PhotoBooth")
-        self.root.wm_protocol("WM_DELETE_WINDOW", self.onClose)\
+        self.root.wm_title("Traffix Stream")
+        self.root.wm_protocol("WM_DELETE_WINDOW", self.onClose)
 
     @staticmethod
     def convert_image(image):
@@ -63,6 +63,7 @@ class GuiVideoStream:
         try:
             # keep looping over frames until we are instructed to stop
             while not self.stopEvent.is_set():
+                print("Grabbing")
                 # grab the frame from the video stream and resize it to
                 # have a maximum width of 300 pixels
                 out = self.q.get()
@@ -74,7 +75,7 @@ class GuiVideoStream:
                 else:
                     self.traffic_indication = self.red_light
 
-                self.frame = imutils.resize(self.frame, width=500)
+                self.frame = imutils.resize(self.frame, width=650)
 
                 # OpenCV represents images in BGR order; however PIL
                 # represents images in RGB order, so we need to swap
@@ -85,23 +86,29 @@ class GuiVideoStream:
 
                 # if the panel is not None, we need to initialize it
                 if self.panel is None:
-                    self.panel = tki.Label(image=image)
+                    self.panel = tki.Label(self.tkFrame, image=image)
                     self.panel.image = image
                     self.panel.pack(anchor="w", side="bottom", padx=10, pady=10)
                 # otherwise, simply update the panel
                 else:
-                    self.panel.configure(image=image)
-                    self.panel.image = image
+                    try:
+                        self.panel.configure(image=image)
+                        self.panel.image = image
+                    except Exception as e:
+                        print(e)
 
                 if self.traffic_panel is None:
-                    self.traffic_panel = tki.Label(image=self.traffic_indication)
+                    self.traffic_panel = tki.Label(self.tkFrame, image=self.traffic_indication)
                     self.traffic_panel.image = self.traffic_indication
                     self.traffic_panel.pack(anchor="s", side="right", padx=10, pady=10)
 
                 # otherwise, simply update the panel
                 else:
-                    self.traffic_panel.configure(image=self.traffic_indication)
-                    self.traffic_panel.image = self.traffic_indication
+                    try:
+                        self.traffic_panel.configure(image=self.traffic_indication)
+                        self.traffic_panel.image = self.traffic_indication
+                    except Exception as e:
+                        print(e)
 
         except RuntimeError as e:
             print("[INFO] caught a RuntimeError")

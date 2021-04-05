@@ -111,7 +111,8 @@ class Capture:
 
     def assign_video_cap(self):
         try:
-            self.video_cap = cv2.VideoCapture(0)
+            print(self.get_param())
+            self.video_cap = cv2.VideoCapture(self.get_param())
             if not self.video_cap.isOpened():
                 print("Error opening video")
         except Exception as e:
@@ -129,6 +130,9 @@ class LiveCapture(Capture):
 
 class StaticCapture(Capture):
     def __init__(self, frames_queue, result_queue, video_path):
+        """
+        :type video_path: str
+        """
         super().__init__(frames_queue, result_queue)
         self.video_path = video_path
 

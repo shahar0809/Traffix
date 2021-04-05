@@ -1,7 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox
 from gui import choose_camera, crosswalk_details, set_traffic_bars, choose_location, home
-from utils import Environment
 import gui.screen as screen
 
 
@@ -14,7 +13,8 @@ class NewEnvironment(screen.Screen):
         self.rowconfigure((0, 1, 2, 3, 4, 5, 6), weight=1)
 
         tk.Label(self, text="Register environment", font=(self.default_font, 45)).grid(row=0, column=0, columnspan=2)
-
+        tk.Button(self, text="Back", command=self.go_back,
+                  font=(self.default_font, 20)).grid(row=0, column=0, padx=(10, 0), ipadx=2)
         # Name section
         tk.Label(self, text="Name:", font=(self.default_font, 20)). \
             grid(row=1, column=0, padx=30, sticky='w')
@@ -56,6 +56,9 @@ class NewEnvironment(screen.Screen):
             messagebox.showerror(title="Error", message="Please choose a camera")
         else:
             self.controller.open_frame(crosswalk_details.CrosswalkDetails)
+
+    def go_back(self):
+        self.controller.open_frame(home.Home)
 
     def open_traffic_bars(self):
         self.controller.open_frame(set_traffic_bars.SetTrafficBars)

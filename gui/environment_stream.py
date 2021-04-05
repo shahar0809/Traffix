@@ -5,7 +5,7 @@ import cv2
 import multiprocessing as mp
 import gui.screen as screen
 import threading
-from gui import tk_video_stream, update_environment
+from gui import tk_video_stream, update_environment, home
 
 
 class EnvironmentStream(screen.Screen):
@@ -21,12 +21,14 @@ class EnvironmentStream(screen.Screen):
 
         # Getting the environment selected
         self.env = self.controller.data["ENVIRONMENT"]
+        print("HELLOOO")
+        print(self.database.get_camera_details(self.env.get_camera_id()).get_camera_index())
 
         tk.Button(self, text="Back", font=(self.default_font, 15),
                   command=self.go_back).pack(side="top", anchor="e")
 
         tk.Button(self, text="Update environment", font=(self.default_font, 20),
-          command=self.update_env).pack(anchor="w", side="top")
+                  command=self.update_env).pack(anchor="w", side="top")
 
         # Adding title label
         tk.Label(self, text=self.env.get_name(), font=(self.default_font, 45)).pack(pady=10)
@@ -40,7 +42,7 @@ class EnvironmentStream(screen.Screen):
         self.weather_panel = None
 
         self.system.run()
-        self.vs = tk_video_stream.GuiVideoStream(controller, self.results_queue, self.stop_event)
+        self.vs = tk_video_stream.GuiVideoStream(self, self.controller, self.results_queue, self.stop_event)
 
     def on_close(self):
         self.stop_event.set()
@@ -48,12 +50,16 @@ class EnvironmentStream(screen.Screen):
 
     def update_env(self):
         self.on_close()
+        self.pack_forget()
+        self.destroy_screen()
+        self.controller.data["ENV_ID"] = self.env.get_id()
         self.controller.open_frame(update_environment.UpdateEnvironment)
 
     def go_back(self):
         self.on_close()
+        self.pack_forget()
         self.destroy_screen()
-
+        self.controller.open_frame(home.Home)
 
     @staticmethod
     def convert_image(image):

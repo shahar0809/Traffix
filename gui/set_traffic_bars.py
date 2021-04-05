@@ -19,7 +19,8 @@ class SetTrafficBars(screen.Screen):
         self.bars = []
 
         tk.Label(self, text="Traffic bars", font=(self.default_font, 45)).grid(row=0, column=0, columnspan=2)
-
+        tk.Button(self, text="Back", command=self.go_back,
+                  font=(self.default_font, 15)).grid(row=0, column=0)
         tk.Label(self, text=info_text[0], font=(self.default_font, 14)).grid(row=1, column=0, columnspan=2)
         tk.Label(self, text=info_text[1], font=(self.default_font, 14)).grid(row=2, column=0, columnspan=2)
         tk.Label(self, text=info_text[2], font=(self.default_font, 14)).grid(row=3, column=0, columnspan=2)
@@ -39,6 +40,9 @@ class SetTrafficBars(screen.Screen):
 
         tk.Button(self, text="Done", font=(self.default_font, 25), command=self.update_bars_in_env). \
             grid(row=7, column=0, columnspan=2)
+
+    def go_back(self):
+        self.destroy_screen()
 
     def update_bars_in_env(self):
         bars = [int(bar.get()) for bar in self.bars]

@@ -1,4 +1,6 @@
 # Import necessary libraries
+import os
+
 import cv2 as cv
 from queue import Queue
 from database import SQLiteDatabase
@@ -28,6 +30,7 @@ class System:
         :param video_path:
         :type video_path: str
         """
+        self.check_camera_indexes()
         self.result_queue = results_queue
         self.frames_queue = frames_queue
 
@@ -48,7 +51,11 @@ class System:
         self.crosswalk = self.env.get_crosswalk_details()
 
         # Initializing the frames capturing module
-        self.capture = cap.LiveCapture(self.frames_queue, self.result_queue, self.camera.get_camera_index())
+        self.root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        self.samples = os.path.join(self.root_dir, 'samples')
+        path = os.path.join(self.samples, 'traffic.mp4')
+        self.capture = cap.StaticCapture(self.frames_queue, self.result_queue, "//home//magshimim//Videos//traffic.mp4")
+        #self.capture = cap.LiveCapture(self.frames_queue, self.result_queue, self.camera.get_camera_index())
 
         # Initializing an object tracker
         self.tracker = tracker.CentroidTracker(self.crosswalk)
@@ -69,6 +76,21 @@ class System:
         self.stop_event = mp.Event()
         self.cap_thread = mp.Process(target=self.capture.capture_frames, args=(self.stop_event,))
         self.frames_thread = mp.Process(target=self.pop_frames, args=())
+
+    @staticmethod
+    def test_device(src):
+        c = cv.VideoCapture(src)
+        if c is None or not c.isOpened():
+            print('Warning: unable to open video source: ', src)
+            return False
+        else: return True
+
+    def check_camera_indexes(self):
+        working_devices = []
+        for index in range(11):
+            if self.test_device(index):
+                working_devices += [index]
+        print(working_devices)
 
     def on_close(self):
         print("close")

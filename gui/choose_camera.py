@@ -1,7 +1,7 @@
 import tkinter as tk
 from gui import new_camera
 import gui.screen as screen
-
+from gui import home
 
 class ChooseCamera(screen.Screen):
     def __init__(self, parent, controller):
@@ -13,6 +13,8 @@ class ChooseCamera(screen.Screen):
         self.rowconfigure(tuple(range(len(self.cameras) + 1)), weight=1)
 
         tk.Label(self, text="Select camera", font=(self.default_font, 64)).pack(pady=30)
+        tk.Button(self, text="Back", command=self.go_back,
+                  font=(self.default_font, 20)).pack(side="left")
         self.buttons = {}
 
         # TODO:This should be replaced with something similar to scroll view/list view
@@ -28,6 +30,9 @@ class ChooseCamera(screen.Screen):
 
         tk.Button(self, text="Add a new camera", command=self.open_new_camera,
                   font=(self.default_font, 20)).pack(pady=30, side="bottom")
+
+    def go_back(self):
+        self.controller.open_frame(home.Home)
 
     def open_new_camera(self):
         self.controller.open_frame(new_camera.NewCamera)
