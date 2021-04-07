@@ -14,7 +14,7 @@ class NewEnvironment(screen.Screen):
 
         tk.Label(self, text="Register environment", font=(self.default_font, 45)).grid(row=0, column=0, columnspan=2)
         tk.Button(self, text="Back", command=self.go_back,
-                  font=(self.default_font, 20)).grid(row=0, column=0, padx=(10, 0), ipadx=2)
+                  font=(self.default_font, 20)).grid(row=6, column=1, padx=(10, 0), ipadx=2)
         # Name section
         tk.Label(self, text="Name:", font=(self.default_font, 20)). \
             grid(row=1, column=0, padx=30, sticky='w')
@@ -59,6 +59,7 @@ class NewEnvironment(screen.Screen):
 
     def go_back(self):
         self.controller.open_frame(home.Home)
+        self.destroy_screen()
 
     def open_traffic_bars(self):
         self.controller.open_frame(set_traffic_bars.SetTrafficBars)

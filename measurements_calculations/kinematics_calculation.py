@@ -47,6 +47,4 @@ class KinematicsCalculation(measurements.VehicleMeasure):
             elif not has_passed_line2 and not has_passed_line1:
                 dist.append(point_obj.dist_from_line(line1))
 
-        print("dist")
-        print(dist)
         return min(dist) / self.pixels_ratio

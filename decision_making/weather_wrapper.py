@@ -22,6 +22,7 @@ class WeatherAPI:
 
     def __init__(self, location):
         self.location = location
+        print(location)
 
     def make_request(self):
         url = self.API_URL  # Inserting the url of the API
@@ -33,7 +34,6 @@ class WeatherAPI:
 
         # Sending the request to the API
         response = requests.get(url)
-        print(response)
         # Deserialization with JSON
         self.data = response.json()
         return self.data
@@ -82,10 +82,13 @@ class WeatherWrapper:
         self.weather = weather
         self.weather_indication = []
 
-        self.priorities = {'Heavy snow':0.1, 'Heavy rain':0.2, 'Light snow': 0.4, 'Low visibility' :0.3,
-                  'Thunderstorm':0.5, 'Mist':0.5, 'Rain':0.5, 'Light rain':0.7, "Night":0.8, 'Strong wind':0.8}
+        self.priorities = {'Heavy snow': 0.1, 'Heavy rain': 0.2, 'Light snow': 0.4, 'Low visibility': 0.3,
+                           'Thunderstorm': 0.5, 'Mist': 0.5, 'Rain': 0.5, 'Light rain': 0.7, "Night": 0.8,
+                           'Strong wind': 0.8}
 
     def process_description(self):
+        print("hello")
+        self.weather.make_request()
         desc = self.weather.get_weather_desc().lower()
         scalar = 1
 
@@ -97,7 +100,9 @@ class WeatherWrapper:
         return scalar
 
     def process_weather(self):
+        print("dsjdsdsdsds")
         weather_indication = []
+        print("YOLOOOOOOOOOOOO")
         desc_scalar = self.process_description()
         self.weather.make_request()
 
@@ -112,11 +117,11 @@ class WeatherWrapper:
         if sunset < current_time:
             # Dividing by a big number because of the UTC format
             delta = (current_time - sunset)
-            dist_scalar *= (delta / 10**len(str(delta)))
+            dist_scalar *= (delta / 10 ** len(str(delta)))
             weather_indication += "Night"
 
         if visibility < self.MIN_VISIBILITY:
-            dist_scalar /= ((self.MIN_VISIBILITY - visibility)/1000)
+            dist_scalar /= ((self.MIN_VISIBILITY - visibility) / 1000)
             weather_indication += ["Low visibility"]
 
         if wind > self.MAX_WIND_SPEED:

@@ -17,29 +17,39 @@ class EnvironmentStream(screen.Screen):
         self.stop_event = threading.Event()
         self.image = None
         self.controller.attributes('-zoomed', False)
-        self.interval = 2  # Interval in ms to get the latest frame
+        self.interval = 10  # Interval in ms to get the latest frame
+        self.weather_icons = {}
+        self.priorities = {'Heavy snow': 0.1, 'Heavy rain': 0.2, 'Light snow': 0.4, 'Low visibility': 0.3,
+                           'Thunderstorm': 0.5, 'Mist': 0.5, 'Rain': 0.5, 'Light rain': 0.7, "Night": 0.8,
+                           'Strong wind': 0.8}
 
         # Defining queues for input and output frames
         self.frames_queue = mp.Queue()
         self.results_queue = mp.Queue()
 
+        self.columnconfigure(0, weight=5)
+        self.columnconfigure(0, weight=3)
+        self.rowconfigure((0, 1, 2, 3, 4), weight=1)
+
         # Getting the environment selected
         self.env = self.controller.data["ENVIRONMENT"]
-        print(self.database.get_camera_details(self.env.get_camera_id()).get_camera_index())
 
         tk.Button(self, text="Back", font=(self.default_font, 15),
-                  command=self.go_back).pack(side="top", anchor="e")
+                  command=self.go_back).grid(row=0, column=1, sticky="ne", padx=3, pady=3)
 
         tk.Button(self, text="Update environment", font=(self.default_font, 20),
-                  command=self.update_env).pack(anchor="w", side="top")
+                  command=self.update_env).grid(row=0, column=0, sticky="nw", padx=3, pady=3)
 
         # Adding title label
-        tk.Label(self, text=self.env.get_name(), font=(self.default_font, 45)).pack(pady=10)
+        tk.Label(self, text=self.env.get_name(), font=(self.default_font, 45)).grid(row=1, column=0, columnspan=2,
+                                                                                    sticky="n", pady=(0, 20))
 
         self.curr_frame = None
-        self.thread = None
         self.decision = False
         self.traffic_indication = None
+        self.weather_label = None
+        self.weather_indication = None
+        self.weather_icon = None
         self.image_on_canvas = None
         self.traffic_panel = None
 
@@ -65,6 +75,7 @@ class EnvironmentStream(screen.Screen):
 
         self.green_light = self.convert_image(self.green_light)
         self.red_light = self.convert_image(self.red_light)
+        self.define_weather_icons()
 
         # set a callback to handle when the window is closed
         self.controller.wm_title("Traffix Stream")
@@ -80,12 +91,19 @@ class EnvironmentStream(screen.Screen):
         self.controller.after(self.interval, self.update_canvas)
         self.system.run()
 
-        #self.vs = tk_video_stream.GuiVideoStream(self, self.controller, self.results_queue, self.stop_event)
+        # self.vs = tk_video_stream.GuiVideoStream(self, self.controller, self.results_queue, self.stop_event)
 
     def update_canvas(self):
         result = self.results_queue.get()
+
+        if self.stop_event.is_set():
+            return
+        
         self.curr_frame = result[0]
         self.decision = result[1]
+        self.weather_indication = result[2]
+        print("IN STREAMMM")
+        print(result[2])
 
         if self.decision:
             self.traffic_indication = self.green_light
@@ -108,22 +126,61 @@ class EnvironmentStream(screen.Screen):
             self.y_scroll.config(command=self.canvas.yview)
             self.image_on_canvas = self.canvas.create_image(0, 0, image=self.curr_frame, anchor="nw")
             self.canvas.config(scrollregion=self.canvas.bbox(tk.ALL))
-            self.tkFrame.pack(anchor="w", side="bottom")
+            self.tkFrame.grid(row=2, column=0, rowspan=5)
 
         if self.traffic_panel is None:
             self.traffic_panel = tk.Label(self, image=self.traffic_indication)
             self.traffic_panel.image = self.traffic_indication
-            self.traffic_panel.pack(anchor="s", side="right", padx=10, pady=10)
-
-        # otherwise, simply update the panel
+            self.traffic_panel.grid(row=2, column=1)
         else:
             try:
                 self.traffic_panel.configure(image=self.traffic_indication)
                 self.traffic_panel.image = self.traffic_indication
             except Exception as e:
                 print(e)
-        self.controller.after(self.interval, self.update_canvas)
 
+        if self.weather_panel is None:
+            self.weather_icon = self.get_weather_icon(self.weather_indication)
+            self.weather_panel = tk.Label(self, image=self.weather_icon)
+            self.weather_panel.image = self.weather_icon
+            self.weather_panel.pack_propagate(False)
+            self.weather_panel.grid(row=3, column=1, padx=3)
+            self.weather_label = tk.Label(self, text=self.weather_indication[0],
+                                          font=(self.default_font, 10))
+            self.weather_label.grid(row=4, column=1, padx=3)
+        else:
+            try:
+                self.weather_panel.configure(image=self.weather_icon)
+                self.weather_panel.image = self.weather_icon
+                self.weather_label.config(text=self.weather_indication[0])
+            except Exception as e:
+                print(e)
+
+        if not self.stop_event.is_set():
+            self.controller.after(self.interval, self.update_canvas)
+
+    def get_weather_icon(self, indication):
+        indication = [desc.lower() for desc in indication]
+        for weather in self.weather_icons.keys():
+            weather_mode = weather.lower()
+            print(weather_mode)
+            print(indication)
+            for desc in indication:
+                if weather_mode in desc:
+                    return self.weather_icons[weather]
+
+    def define_weather_icons(self):
+        self.weather_icons["RAIN"] = cv2.imread(os.path.join(self.resources, 'rain.png'))
+        self.weather_icons["SNOW"] = cv2.imread(os.path.join(self.resources, 'snow.jpg'))
+        self.weather_icons["THUNDERSTORM"] = cv2.imread(os.path.join(self.resources, 'thunderstorm.png'))
+        self.weather_icons["VISIBILITY"] = cv2.imread(os.path.join(self.resources, 'visibility.png'))
+        self.weather_icons["MIST"] = cv2.imread(os.path.join(self.resources, 'mist.png'))
+        self.weather_icons["NIGHT"] = cv2.imread(os.path.join(self.resources, 'night.png'))
+        self.weather_icons["WIND"] = cv2.imread(os.path.join(self.resources, 'wind.png'))
+
+        for weather in self.weather_icons.keys():
+            self.weather_icons[weather] = imutils.resize(self.weather_icons[weather], width=100, height=250)
+            self.weather_icons[weather] = self.convert_image(self.weather_icons[weather])
 
     def on_close(self):
         self.stop_event.set()
@@ -139,8 +196,8 @@ class EnvironmentStream(screen.Screen):
     def go_back(self):
         self.on_close()
         self.pack_forget()
-        self.destroy_screen()
         self.controller.open_frame(home.Home)
+        self.destroy_screen()
 
     @staticmethod
     def convert_image(image):
@@ -148,41 +205,3 @@ class EnvironmentStream(screen.Screen):
         image = Image.fromarray(image)
         image = ImageTk.PhotoImage(image)
         return image
-
-    def handle_video_panel(self):
-        self.image = self.convert_image(self.image)
-        if self.video_panel is None:
-            self.video_panel = tk.Label(image=self.image)
-            self.video_panel.image = self.image
-            self.video_panel.pack(side="left", padx=10, pady=10)
-        else:
-            self.video_panel.configure(image=self.image)
-            self.video_panel.image = self.image
-
-    def handle_traffic_light(self, decision):
-        # Change light indication
-        if decision:
-            self.image = self.green_light
-        else:
-            self.image = self.red_light
-
-        if self.traffic_panel is None:
-            self.traffic_panel = tk.Label(image=self.image)
-            self.traffic_panel.image = self.image
-            self.traffic_panel.pack(side="left", padx=10, pady=10)
-        else:
-            self.traffic_panel.configure(image=self.image)
-            self.traffic_panel.image = self.image
-
-    def handle_result_frames(self):
-        while not self.system.stop_event.is_set():
-            print("hello")
-            (res_frame, decision) = self.results_queue.get()
-            print("DECISION")
-            print(decision)
-
-            # Change video feed frame
-            self.image = res_frame
-            self.handle_video_panel()
-
-            self.handle_traffic_light(decision)

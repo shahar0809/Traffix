@@ -33,6 +33,8 @@ class Decision:
 class DecisionMaker(Decision):
     def __init__(self, camera, location):
         super().__init__(camera, location)
+        self.weather_data = weather_wrapper.WeatherAPI(self.location)
+        self.weather = weather_wrapper.WeatherWrapper(self.weather_data)
 
     def distance_change(self):
         """
@@ -42,9 +44,13 @@ class DecisionMaker(Decision):
         :return: A scalar
         :rtype: float
         """
-        weather_data = weather_wrapper.WeatherAPI(self.location)
-        weather = weather_wrapper.WeatherWrapper(weather_data)
-        self.dist_scalar, self.weather_indication = weather.process_weather()
+        print("we here")
+        self.dist_scalar, self.weather_indication = self.weather.process_weather()
+        print("WEATHER")
+        print(self.weather_indication)
+
+    def get_weather_indication(self):
+        return self.weather_indication
 
     def calculate_time(self, distance, velocity, acceleration):
         """
@@ -78,7 +84,7 @@ class DecisionMaker(Decision):
         :param vehicles: list of vehicles.
         :return: The decision - Is it safe to cross or not
         """
-
+        self.distance_change()
         for vehicle in vehicles:
             decision = self.make_decision_for_vehicle(vehicle)
             if decision is not None and not decision:

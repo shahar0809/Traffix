@@ -19,19 +19,18 @@ class MarkCrosswalk(screen.Screen):
         # Title
         tk.Label(self, text="Mark crosswalk", font=(self.default_font, 45)).pack()
 
-        tk.Button(self, text="Back", command=self.go_back,
-                  font=(self.default_font, 15)).pack(side="left")
         # Instructions
         tk.Label(self, text="Mark the crosswalk in the frame by choosing its 4 corners",
                  font=(self.default_font, 16)).pack(pady=10)
         tk.Label(self, text="Choose the point consecutively", font=(self.default_font, 16)).pack(pady=10)
-        tk.Label(self, text="Choose the line closest to the vehicles' direction first",
+        tk.Label(self, text="Choose the line that's the length and closest to the vehicles' direction first",
                  font=(self.default_font, 16)).pack(pady=10)
 
         # A button that opens an OpenCV window to show frame
         tk.Button(self, text="Reset", command=self.reset_crosswalk, font=(self.default_font, 20)).pack(padx=10, pady=10, side=tk.LEFT)
         tk.Button(self, text="OK", command=self.apply_crosswalk, font=(self.default_font, 20)).pack(padx=10, pady=10, side=tk.RIGHT)
-
+        tk.Button(self, text="Back", command=self.go_back,
+                  font=(self.default_font, 15)).pack(padx=10, pady=10, side=tk.RIGHT)
         frame = tk.Frame(self, bd=2, relief=tk.SUNKEN)
         frame.grid_rowconfigure(0, weight=1)
         frame.grid_columnconfigure(0, weight=1)

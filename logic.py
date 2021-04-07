@@ -30,7 +30,6 @@ class System:
         :param video_path:
         :type video_path: str
         """
-        self.check_camera_indexes()
         self.result_queue = results_queue
         self.frames_queue = frames_queue
 
@@ -167,7 +166,8 @@ class System:
         # Putting the frame with the bounding boxes in the result queue
         load_level = self.load_detector.detect_traffic_level(vehicles, self.env.get_bars())
         decision = self.decision_maker.make_decision(vehicles, load_level)
-        self.result_queue.put((self.make_frame(vehicles, result_frames[1]), decision))
+        weather_indication = self.decision_maker.get_weather_indication()
+        self.result_queue.put((self.make_frame(vehicles, result_frames[1]), decision, weather_indication))
 
     def apply_detection(self, frame):
         """
