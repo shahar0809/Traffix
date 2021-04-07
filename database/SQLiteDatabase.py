@@ -56,8 +56,8 @@ class SQLiteDatabase(IDatabase):
                                                     width integer NOT NULL,
                                                     length integer NOT NULL,
                                                     is_above INTEGER NOT NULL,
-                                                    longitude TEXT NOT NULL,
                                                     latitude TEXT NOT NULL,
+                                                    longitude TEXT NOT NULL,
                                                     camera_id INTEGER NOT NULL,
                                                     FOREIGN KEY (camera_id) REFERENCES cameras (id)
                                                ); """

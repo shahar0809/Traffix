@@ -98,7 +98,7 @@ class EnvironmentStream(screen.Screen):
 
         if self.stop_event.is_set():
             return
-        
+
         self.curr_frame = result[0]
         self.decision = result[1]
         self.weather_indication = result[2]
@@ -145,7 +145,7 @@ class EnvironmentStream(screen.Screen):
             self.weather_panel.image = self.weather_icon
             self.weather_panel.pack_propagate(False)
             self.weather_panel.grid(row=3, column=1, padx=3)
-            self.weather_label = tk.Label(self, text=self.weather_indication[0],
+            self.weather_label = tk.Label(self, text=self.weather_indication,
                                           font=(self.default_font, 10))
             self.weather_label.grid(row=4, column=1, padx=3)
         else:

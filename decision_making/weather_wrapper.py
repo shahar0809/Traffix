@@ -80,29 +80,28 @@ class WeatherWrapper:
 
     def __init__(self, weather):
         self.weather = weather
-        self.weather_indication = []
+        self.weather_indication = ""
 
-        self.priorities = {'Heavy snow': 0.1, 'Heavy rain': 0.2, 'Light snow': 0.4, 'Low visibility': 0.3,
-                           'Thunderstorm': 0.5, 'Mist': 0.5, 'Rain': 0.5, 'Light rain': 0.7, "Night": 0.8,
-                           'Strong wind': 0.8}
+        self.priorities = {'Heavy snow': 0.1, 'Heavy rain': 0.2, 'Light snow': 0.3, 'Low visibility': 0.5,
+                           'Thunderstorm': 0.6, 'Mist': 0.5, 'Rain': 0.4, 'Light rain': 0.7, "Night": 0.8,
+                           'Strong wind': 0.8, "": 1}
 
     def process_description(self):
-        print("hello")
         self.weather.make_request()
+        self.weather_indication = ""
         desc = self.weather.get_weather_desc().lower()
+        print("Desc" + desc)
         scalar = 1
 
         for weather in self.priorities.keys():
             if weather.lower() in desc:
-                self.weather_indication += [weather]
+                if self.priorities[weather] < self.priorities[self.weather_indication]:
+                    self.weather_indication = weather
                 scalar *= self.priorities[weather]
 
         return scalar
 
     def process_weather(self):
-        print("dsjdsdsdsds")
-        weather_indication = []
-        print("YOLOOOOOOOOOOOO")
         desc_scalar = self.process_description()
         self.weather.make_request()
 
@@ -118,17 +117,20 @@ class WeatherWrapper:
             # Dividing by a big number because of the UTC format
             delta = (current_time - sunset)
             dist_scalar *= (delta / 10 ** len(str(delta)))
-            weather_indication += "Night"
+            if self.priorities["Night"] < self.priorities[self.weather_indication]:
+                self.weather_indication = "Night"
 
         if visibility < self.MIN_VISIBILITY:
             dist_scalar /= ((self.MIN_VISIBILITY - visibility) / 1000)
-            weather_indication += ["Low visibility"]
+            if self.priorities["Low visibility"] < self.priorities[self.weather_indication]:
+                self.weather_indication = "Low visibility"
 
         if wind > self.MAX_WIND_SPEED:
             dist_scalar /= (self.MAX_WIND_SPEED - wind)
-            weather_indication += ["Strong wind"]
+            if self.priorities["Strong wind"] < self.priorities[self.weather_indication]:
+                self.weather_indication = "Strong wind"
 
-        return dist_scalar, weather_indication
+        return dist_scalar, self.weather_indication
 
 
 if __name__ == '__main__':
