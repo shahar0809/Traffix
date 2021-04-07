@@ -91,3 +91,5 @@ class LinearLine:
 
     def is_point_above(self, point):
         return -abs(self.calc_y_value(point.get_x())) < point.get_y()
+
+

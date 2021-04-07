@@ -38,13 +38,13 @@ class KinematicsCalculation(measurements.VehicleMeasure):
                                or (not line2.is_point_above(point_obj) and not self.crosswalk.get_is_above())
 
             # Is the vehicle on the crosswalk
-            if has_passed_line1 and not has_passed_line2:
+            if has_passed_line2 and not has_passed_line1:
                 dist.append(0)
 
-            if has_passed_line1 and has_passed_line2:
+            elif has_passed_line1 and has_passed_line2:
                 dist.append(-1)
 
-            else:
+            elif not has_passed_line2 and not has_passed_line1:
                 dist.append(point_obj.dist_from_line(line1))
 
         print("dist")

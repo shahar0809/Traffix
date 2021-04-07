@@ -62,7 +62,11 @@ def main():
 
     # set the dimensions of the screen and where it is placed
     app.geometry('%dx%d+%d+%d' % (w, h, x, y))
-    app.mainloop()
+
+    try:
+        app.mainloop()
+    except KeyboardInterrupt:
+        print("END OF EXECUTION")
 
 
 if __name__ == '__main__':

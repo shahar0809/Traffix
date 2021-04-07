@@ -69,7 +69,8 @@ class MarkCrosswalk(screen.Screen):
     """ The following functions relate to capturing the points of the crosswalk """
 
     def get_vehicles_direction(self):
-        return self.crosswalk[0][1] < self.crosswalk[3][1]
+        # Return true if the direction is to positive y, false otherwise
+        return self.crosswalk[0][1] > self.crosswalk[3][1]
 
     def reset_crosswalk(self):
         self.image = self.clone.copy()
@@ -78,7 +79,7 @@ class MarkCrosswalk(screen.Screen):
         self.crosswalk = []
 
     def apply_crosswalk(self):
-        is_above = self.get_vehicles_direction()
+        is_above = not self.get_vehicles_direction()
         width, length = self.controller.data["CROSSWALK_WIDTH"], self.controller.data["CROSSWALK_LENGTH"]
         crosswalk = CrosswalkDetails(self.crosswalk, width, length, is_above)
         self.controller.data["CROSSWALK"] = crosswalk
