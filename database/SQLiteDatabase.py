@@ -6,6 +6,10 @@ from database.DB_Wrapper import IDatabase
 AMOUNT_OF_DAYS = 7
 AMOUNT_OF_HOURS = 24
 
+LOW = 0
+MED = 1
+HIGH = 2
+
 
 class SQLiteDatabase(IDatabase):
     def get_traffic_bars(self, env_id):
@@ -63,11 +67,12 @@ class SQLiteDatabase(IDatabase):
                                                ); """
 
         sql_create_loads_table = """ CREATE TABLE IF NOT EXISTS loads (
-                                                    env_id integer PRIMARY KEY,
+                                                    env_id integer,
                                                     level integer NOT NULL,
-                                                    hour integer NOT NULL,
-                                                    day integer NOT NULL,
+                                                    hour TEXT NOT NULL,
+                                                    day TEXT NOT NULL,
                                                     FOREIGN KEY (env_id) REFERENCES environments (id)
+                                                    UNIQUE(day, hour) ON CONFLICT REPLACE
                                                ); """
 
         # create a database connection
@@ -235,7 +240,7 @@ class SQLiteDatabase(IDatabase):
             cursor.close()
             raise e
 
-    def get_traffic_data(self, day, hour):
+    def get_traffic_data(self, day, hour, env_id):
         """
         return traffic data
         :param day: Will indicate a relevant environment
@@ -243,11 +248,13 @@ class SQLiteDatabase(IDatabase):
         :return: crosswalk details
         """
         # select crosswalk details
-        sql_select = "SELECT level FROM loads WHERE day = %d AND hour = %d"
-        cursor = self.conn.execute(sql_select, (day, hour))
-        return_select = cursor.fetchone()
-
-        return return_select
+        sql_select = "SELECT level FROM loads WHERE day = ? AND hour = ? AND env_id = ?"
+        try:
+            cursor = self.conn.execute(sql_select, (day, hour, env_id))
+            return_select = cursor.fetchone()
+            return return_select
+        except Exception as e:
+            print(e)
 
     def set_traffic_data(self, env_id, day, hour, data):
         """
@@ -258,6 +265,23 @@ class SQLiteDatabase(IDatabase):
         :param env_id: The place where we want to update.
         :return: true if the update works, false if doesn't.
         """
+
+        cursor = self.conn.cursor()
+        # insert camera details
+        sql_insert = "INSERT INTO loads (env_id, level, hour, day)" \
+                     "VALUES (?,?,?,?)"
+
+        try:
+            cursor.execute(sql_insert, (env_id, data, hour, day))
+            self.conn.commit()
+            cursor.close()
+            return True
+
+        except sqlite3.Error as e:
+            print(e)
+            self.add_traffic_data(env_id, day, hour, data)
+
+    def add_traffic_data(self, env_id, day, hour, data):
         cursor = self.conn.cursor()
         # update traffic bar details
         sql_update = "UPDATE loads SET level = ? WHERE env_id = ? and day = ? and hour = ?"
@@ -266,11 +290,11 @@ class SQLiteDatabase(IDatabase):
             cursor.execute(sql_update, (data, env_id, day, hour))
             self.conn.commit()
             cursor.close()
+            print("SUCCESS")
             return True
 
         except sqlite3.Error as e:
-            cursor.close()
-            return e
+            print(e)
 
     def set_traffic_bars(self, env_id, traffic_bar):
         """

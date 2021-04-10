@@ -2,7 +2,7 @@
 import os
 
 import cv2 as cv
-from queue import Queue
+from datetime import datetime
 from database import SQLiteDatabase
 from vehicles_detection import auto_detection
 
@@ -58,7 +58,7 @@ class System:
 
         # Initializing an object tracker
         self.tracker = tracker.CentroidTracker(self.crosswalk)
-        self.load_detector = auto_detection.TrafficDetector()
+        self.load_detector = auto_detection.TrafficDetector(self.db, self.env.get_id())
 
         # Initializing the vehicle detection module
         threshold = 0.3
@@ -69,7 +69,7 @@ class System:
         self.calculator = kinematics.KinematicsCalculation(self.camera, self.crosswalk)
 
         # Initializing a decision maker
-        self.decision_maker = decision_making.DecisionMaker(self.camera, self.env.get_location())
+        self.decision_maker = decision_making.DecisionMaker(self.camera, self.env.get_location(), self.env.get_id())
 
         # Init thread of capturing frames
         self.stop_event = mp.Event()
@@ -164,8 +164,9 @@ class System:
                     vehicles.append(self.calculator.get_measurements(vehicle_boxes, object_id))
 
         # Putting the frame with the bounding boxes in the result queue
-        load_level = self.load_detector.detect_traffic_level(vehicles, self.env.get_bars())
-        decision = self.decision_maker.make_decision(vehicles, load_level)
+        self.load_detector.detect_traffic_level(vehicles, self.env.get_bars())
+
+        decision = self.decision_maker.make_decision(vehicles)
         weather_indication = self.decision_maker.get_weather_indication()
         self.result_queue.put((self.make_frame(vehicles, result_frames[1]), decision, weather_indication))
 

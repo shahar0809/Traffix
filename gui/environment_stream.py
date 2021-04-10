@@ -160,7 +160,7 @@ class EnvironmentStream(screen.Screen):
             self.controller.after(self.interval, self.update_canvas)
 
     def get_weather_icon(self, indication):
-        indication = [desc.lower() for desc in indication]
+        indication = indication.lower()
         for weather in self.weather_icons.keys():
             weather_mode = weather.lower()
             print(weather_mode)

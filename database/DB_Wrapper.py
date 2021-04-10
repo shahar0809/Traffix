@@ -38,7 +38,7 @@ class IDatabase:
     def get_traffic_bars(self, env_id):
         raise NotImplementedError
 
-    def get_traffic_data(self, day, hour):
+    def get_traffic_data(self, day, hour, env_id):
         raise NotImplementedError
 
     def set_traffic_data(self, env_id, day, hour, data):

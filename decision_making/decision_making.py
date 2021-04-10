@@ -1,13 +1,11 @@
 import measurements_calculations.kinematics_calculation as kinematics
 import cmath
 import decision_making.weather_wrapper as weather_wrapper
-
+from database import SQLiteDatabase
+from datetime import datetime
+from utils import HIGH_LEVEL, MEDIUM_LEVEL, LOW_LEVEL
 crosswalk = 0
 
-
-HIGH_LEVEL = 3
-MID_LEVEL = 2
-LOW_LEVEL = 1
 
 
 class Decision:
@@ -23,18 +21,20 @@ class Decision:
     def calculate_time(self, distance, velocity, acceleration):
         raise NotImplementedError
 
-    def make_decision(self, vehicles, load_level):
+    def make_decision(self, vehicles):
         raise NotImplementedError
 
-    def make_decision_for_vehicle(self, vehicle):
+    def make_decision_for_vehicle(self, vehicle, scalar):
         raise NotImplementedError
 
 
 class DecisionMaker(Decision):
-    def __init__(self, camera, location):
+    def __init__(self, camera, location, env_id):
         super().__init__(camera, location)
         self.weather_data = weather_wrapper.WeatherAPI(self.location)
         self.weather = weather_wrapper.WeatherWrapper(self.weather_data)
+        self.database = SQLiteDatabase.SQLiteDatabase('..\\database\\traffixDB.db')
+        self.env_id = env_id
 
     def distance_change(self):
         """
@@ -78,25 +78,29 @@ class DecisionMaker(Decision):
             x2 = (-b - disc) / (2 * a)
             return x1.real, x2.real
 
-    def make_decision(self, vehicles, load_level):
+    def make_decision(self, vehicles):
         """
         The function makes a decision for vehicles based on environment variables.
         :param vehicles: list of vehicles.
         :return: The decision - Is it safe to cross or not
         """
         self.distance_change()
+        print("YOOOOOOOOOO")
+        load_scalar = self.process_loads()
+        print("YOOOOOOOOOOppppp")
         for vehicle in vehicles:
-            decision = self.make_decision_for_vehicle(vehicle)
+            decision = self.make_decision_for_vehicle(vehicle, load_scalar)
             if decision is not None and not decision:
                 return False
         return True
 
-    def make_decision_for_vehicle(self, vehicle):
+    def make_decision_for_vehicle(self, vehicle, load_scalar):
         """
         The function will make decision for specific vehicle based on environment variables.
         :param: vehicle: Object that will contain box and the distance, the velocity and the acceleration.
         :return: The decision - who to stop and who to let go.
         """
+        print(vehicle.distance)
 
         # Case in which the vehicle passed the crosswalk
         if vehicle.distance < 0:
@@ -107,13 +111,31 @@ class DecisionMaker(Decision):
             return False
 
         try:
-            calc = self.calculate_time(vehicle.distance * self.dist_scalar, vehicle.velocity, vehicle.acceleration)
+            print("real")
+            print(vehicle.distance)
+            print("after")
+            print(vehicle.distance * self.dist_scalar * load_scalar)
+            calc = self.calculate_time(vehicle.distance * self.dist_scalar * load_scalar, vehicle.velocity, vehicle.acceleration)
         except ZeroDivisionError:
+            print("errorrrrr")
             return None
 
         if (0 < calc[0] < 20) or (0 < calc[1] < 20):
             return True
         else:
             return False
+
+    def process_loads(self):
+        curr_hour = str(datetime.now().time())[:2]
+        curr_day = datetime.now().strftime("%A")
+        load_level = self.database.get_traffic_data(curr_day, curr_hour, self.env_id)
+
+        if load_level == LOW_LEVEL:
+            return 2
+        elif load_level == MEDIUM_LEVEL:
+            return 1
+        else:
+            return 0.5
+
 
 

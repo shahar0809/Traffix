@@ -17,8 +17,8 @@ class VehicleMeasure:
         self.crosswalk = crosswalk_details
         # Get the known width and length of the crosswalk
         # width, length = self.crosswalk.width, self.crosswalk.length
-        width = crosswalk_details.get_width()
-        length = crosswalk_details.get_length()
+        width = crosswalk_details.get_width() / 100
+        length = crosswalk_details.get_length() / 100
 
         point1, point2, point3 = crosswalk_details.get_points()[0:3]
 
@@ -27,7 +27,7 @@ class VehicleMeasure:
         ratio_by_width = point2.distance(point3) / width
 
         # Taking the average of the ratios (Assuming that the marking of the crosswalk isn't accurate)
-        self.pixels_ratio = ratio_by_length + ratio_by_width / 2
+        self.pixels_ratio = (ratio_by_length + ratio_by_width) / 2
 
     def calc_distance(self, box):
         """
