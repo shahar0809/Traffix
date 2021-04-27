@@ -22,7 +22,6 @@ ENV/
 env.bak/
 venv.bak/
 
-
 # Generated files
 .idea/**/contentModel.xml
 
