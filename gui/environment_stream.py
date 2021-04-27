@@ -16,7 +16,7 @@ class EnvironmentStream(screen.Screen):
         super().__init__(parent, controller)
         self.stop_event = threading.Event()
         self.image = None
-        self.controller.attributes('-zoomed', False)
+
         self.interval = 10  # Interval in ms to get the latest frame
         self.weather_icons = {}
         self.priorities = {'Heavy snow': 0.1, 'Heavy rain': 0.2, 'Light snow': 0.4, 'Low visibility': 0.3,
@@ -68,6 +68,7 @@ class EnvironmentStream(screen.Screen):
         self.resources = os.path.join(self.root_dir, 'resources')
 
         self.green_light = cv2.imread(os.path.join(self.resources, 'green.png'))
+        print(os.path.join(self.resources, 'green.png'))
         self.red_light = cv2.imread(os.path.join(self.resources, 'red.png'))
 
         self.green_light = imutils.resize(self.green_light, width=50, height=250)
