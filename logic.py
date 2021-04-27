@@ -1,19 +1,23 @@
 # Import necessary libraries
+import os
+
 import cv2 as cv
-from queue import Queue
+from datetime import datetime
+from database import SQLiteDatabase
+from vehicles_detection import auto_detection
 
 # Modules
 import vehicles_detection.yolo_detection as yolo
 import capture_video as cap
 import measurements_calculations.kinematics_calculation as kinematics
-import database.DB_Wrapper as database
+import multiprocessing as mp
 import utils
 import vehicles_detection.centroid_tracking as tracker
 import decision_making.decision_making as decision_making
 
 
 class System:
-    def __init__(self, camera_id, env_id, video_path=None):
+    def __init__(self, frames_queue, results_queue, env, db, video_path=None):
         """
         An initializer to the System object. Initializes all the components and modules that the logic unit uses:
         * Objects detection
@@ -21,40 +25,40 @@ class System:
         * Measurements calculation
         * Database
         * Decision making
-        :param camera_id: The ID (in the db) of the video source.
-        :type camera_id: int
         :param env_id: The ID (in the db) of the environment.
         :type env_id: int
         :param video_path:
         :type video_path: str
         """
-        self.result_queue = Queue()
-        self.frames_queue = Queue()
+        self.result_queue = results_queue
+        self.frames_queue = frames_queue
 
-        # Initializing database connection
-        self.db = database.SqliteDatabase()
-
-        # Initializing the frames capturing module
-        self.capture = cap.user_interaction(video_path)
-
-        capture = cv.VideoCapture(video_path)
-
-        is_frame, frame = capture.read()
-        for i in range(10):
-            is_frame, frame = capture.read()
+        # Initializing database connection and getting env
+        self.db = db
+        self.env = env
 
         # Asking user to mark the crosswalk in the frame
-        self.crosswalk_mark = utils.CaptureCrosswalk()
-        crosswalk_points = self.crosswalk_mark.get_crosswalk(frame)
-        print(crosswalk_points)
-        self.db.set_crosswalk_details(crosswalk_points, 1)
+        # self.crosswalk_mark = utils.CaptureCrosswalk()
+        # crosswalk_points = self.crosswalk_mark.get_crosswalk(frame)
+        # print(crosswalk_points)
+
+        # crosswalk = utils.CrosswalkDetails(crosswalk_points, 30, 5, True)
+        # self.db.set_crosswalk_details(crosswalk, 1)
 
         # Getting camera and crosswalk details from database
-        self.camera = self.db.get_camera_details(camera_id)
-        self.crosswalk = self.db.get_crosswalk_details(env_id)
+        self.camera = self.db.get_camera_details(self.env.get_camera_id())
+        self.crosswalk = self.env.get_crosswalk_details()
+
+        # Initializing the frames capturing module
+        self.root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        self.samples = os.path.join(self.root_dir, 'samples')
+        path = os.path.join(self.samples, 'traffic.mp4')
+        self.capture = cap.StaticCapture(self.frames_queue, self.result_queue, "//home//magshimim//Videos//traffic.mp4")
+        #self.capture = cap.LiveCapture(self.frames_queue, self.result_queue, self.camera.get_camera_index())
 
         # Initializing an object tracker
         self.tracker = tracker.CentroidTracker(self.crosswalk)
+        self.load_detector = auto_detection.TrafficDetector(self.db, self.env.get_id())
 
         # Initializing the vehicle detection module
         threshold = 0.3
@@ -65,32 +69,49 @@ class System:
         self.calculator = kinematics.KinematicsCalculation(self.camera, self.crosswalk)
 
         # Initializing a decision maker
-        self.decision_maker = decision_making.DecisionMaker(self.camera, [32.793542374788785, 34.98896391998108])
+        self.decision_maker = decision_making.DecisionMaker(self.camera, self.env.get_location(), self.env.get_id())
+
+        # Init thread of capturing frames
+        self.stop_event = mp.Event()
+        self.cap_thread = mp.Process(target=self.capture.capture_frames, args=(self.stop_event,))
+        self.frames_thread = mp.Process(target=self.pop_frames, args=())
+
+    @staticmethod
+    def test_device(src):
+        c = cv.VideoCapture(src)
+        if c is None or not c.isOpened():
+            print('Warning: unable to open video source: ', src)
+            return False
+        else: return True
+
+    def check_camera_indexes(self):
+        working_devices = []
+        for index in range(11):
+            if self.test_device(index):
+                working_devices += [index]
+        print(working_devices)
+
+    def on_close(self):
+        print("close")
+        self.stop_event.set()
 
     def run(self):
         """
         Manages the order of the operations, and manages the queues in the program.
         :return: None
         """
-        self.capture.capture_frames(self.frames_queue)
+        self.cap_thread.start()
+        self.frames_thread.start()
 
-        for i in range(1500):
-            self.frames_queue.get()
+    def pop_frames(self):
+        while not self.stop_event.is_set():
+            if self.frames_queue.qsize() > 0:
+                frames = self.frames_queue.get()
+                print("loop")
+                self.handle_frames(frames)
 
-        while self.frames_queue.qsize() > 0:
-            frames = self.frames_queue.get()
-
-            self.handle_frames(frames)
-
-            (res_frame, decision) = self.result_queue.get()
-            cv.imshow('Traffix', res_frame)
-            print("Can pedestrians pass:")
-            print(decision)
-
-            if cv.waitKey(1) & 0xFF == ord('q'):
-                break
-
-        cv.destroyAllWindows()
+    def get_weather_indication(self):
+        return self.decision_maker.weather_indication, self.decision_maker.dist_scalar
 
     def handle_frames(self, frames):
         """
@@ -109,7 +130,8 @@ class System:
         vehicles = []
 
         # For each frame, apply object detection
-        for i in range(cap.Capture.GROUP_SIZE):
+
+        for i in range(self.capture.GROUP_SIZE):
             boxes_result, frame = self.apply_detection(frames[i])
             # Append results of the frame to the lists
             boxes.append(boxes_result)
@@ -142,8 +164,11 @@ class System:
                     vehicles.append(self.calculator.get_measurements(vehicle_boxes, object_id))
 
         # Putting the frame with the bounding boxes in the result queue
+        self.load_detector.detect_traffic_level(vehicles, self.env.get_bars())
+
         decision = self.decision_maker.make_decision(vehicles)
-        self.result_queue.put((self.make_frame(vehicles, result_frames[1]), decision))
+        weather_indication = self.decision_maker.get_weather_indication()
+        self.result_queue.put((self.make_frame(vehicles, result_frames[1]), decision, weather_indication))
 
     def apply_detection(self, frame):
         """
@@ -173,5 +198,7 @@ class System:
 
 
 if __name__ == '__main__':
-    sys = System(1, 1, 'ttt.mp4')
+    fq = mp.Queue()
+    rq = mp.Queue()
+    sys = System(fq, rq, 1, SQLiteDatabase.SQLiteDatabase('database//traffixDB.db'))
     sys.run()

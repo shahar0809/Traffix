@@ -14,7 +14,7 @@ class Point:
         return self.y
 
     def __str__(self):
-        return 'x=' + str(self.x) + ', y=' + str(self.y)
+        return str(self.x) + ',' + str(self.y)
 
     def distance(self, target):
         x_diff = target.get_x() - self.x
@@ -36,15 +36,15 @@ class Point:
             return m
 
     def dist_from_line(self, line):
+        print(self.x, self.y)
+        print(line.get_slope(), line.get_bias())
         res1 = abs(line.get_slope() * self.x - 1 * self.get_y() + line.get_bias())
+        print(res1 / np.math.sqrt(line.get_slope() ** 2 + 1))
         return res1 / np.math.sqrt(line.get_slope() ** 2 + 1)
 
     @staticmethod
-    def to_string(crosswalk_points):
-        x = str(crosswalk_points[0])
-        y = str(crosswalk_points[1])
-        point = [x, y]
-        return DELIMITER.join(point)
+    def to_string(point):
+        return str(point.x) + ',' + str(point.y)
 
     @staticmethod
     def to_point(parsed):
@@ -94,3 +94,5 @@ class LinearLine:
 
     def is_point_above(self, point):
         return -abs(self.calc_y_value(point.get_x())) < point.get_y()
+
+

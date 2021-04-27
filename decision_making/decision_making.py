@@ -1,19 +1,19 @@
 import measurements_calculations.kinematics_calculation as kinematics
 import cmath
 import decision_making.weather_wrapper as weather_wrapper
-
+from database import SQLiteDatabase
+from datetime import datetime
+from utils import HIGH_LEVEL, MEDIUM_LEVEL, LOW_LEVEL
 crosswalk = 0
 
-
-HIGH_LEVEL = 3
-MID_LEVEL = 2
-LOW_LEVEL = 1
 
 
 class Decision:
     def __init__(self, camera, location):
         self.duration = 1 / camera.get_fps()
         self.location = location
+        self.weather_indication = ""
+        self.dist_scalar = 1
 
     def distance_change(self):
         raise NotImplementedError
@@ -24,32 +24,33 @@ class Decision:
     def make_decision(self, vehicles):
         raise NotImplementedError
 
-    def make_decision_for_vehicle(self, vehicle):
+    def make_decision_for_vehicle(self, vehicle, scalar):
         raise NotImplementedError
 
 
 class DecisionMaker(Decision):
-    def __init__(self, camera, location):
+    def __init__(self, camera, location, env_id):
         super().__init__(camera, location)
+        self.weather_data = weather_wrapper.WeatherAPI(self.location)
+        self.weather = weather_wrapper.WeatherWrapper(self.weather_data)
+        self.database = SQLiteDatabase.SQLiteDatabase('..\\database\\traffixDB.db')
+        self.env_id = env_id
 
-    # TODO: this function doesn't get the weather - it changes the distance based on the weather
-    # so change the name so that it fits
-    # Also - it doesn't look at one car - it looks at the weather, and if it's risky, changes
-    # the distance of all vehicles. The return should be a value that's put into all distances.
-    # This function is not supposed to consider the vehicles.
     def distance_change(self):
         """
-        ***I CHANGED THE DESCRIPTION BASED ON WHAT THIS FUNCTION NEEDS TO DO***
         This function calculates a scalar to the distance vector.
         The scalar is based on the current weather.
         :param: location: The location in which we want to get the weather
         :return: A scalar
         :rtype: float
         """
-        weather_data = weather_wrapper.WeatherAPI(self.location)
-        weather = weather_wrapper.WeatherWrapper(weather_data)
-        total = weather.process_weather()
-        return total
+        print("we here")
+        self.dist_scalar, self.weather_indication = self.weather.process_weather()
+        print("WEATHER")
+        print(self.weather_indication)
+
+    def get_weather_indication(self):
+        return self.weather_indication
 
     def calculate_time(self, distance, velocity, acceleration):
         """
@@ -83,19 +84,23 @@ class DecisionMaker(Decision):
         :param vehicles: list of vehicles.
         :return: The decision - Is it safe to cross or not
         """
-
+        self.distance_change()
+        print("YOOOOOOOOOO")
+        load_scalar = self.process_loads()
+        print("YOOOOOOOOOOppppp")
         for vehicle in vehicles:
-            decision = self.make_decision_for_vehicle(vehicle)
+            decision = self.make_decision_for_vehicle(vehicle, load_scalar)
             if decision is not None and not decision:
                 return False
         return True
 
-    def make_decision_for_vehicle(self, vehicle):
+    def make_decision_for_vehicle(self, vehicle, load_scalar):
         """
         The function will make decision for specific vehicle based on environment variables.
         :param: vehicle: Object that will contain box and the distance, the velocity and the acceleration.
         :return: The decision - who to stop and who to let go.
         """
+        print(vehicle.distance)
 
         # Case in which the vehicle passed the crosswalk
         if vehicle.distance < 0:
@@ -106,13 +111,31 @@ class DecisionMaker(Decision):
             return False
 
         try:
-            calc = self.calculate_time(vehicle.distance, vehicle.velocity, vehicle.acceleration)
+            print("real")
+            print(vehicle.distance)
+            print("after")
+            print(vehicle.distance * self.dist_scalar * load_scalar)
+            calc = self.calculate_time(vehicle.distance * self.dist_scalar * load_scalar, vehicle.velocity, vehicle.acceleration)
         except ZeroDivisionError:
+            print("errorrrrr")
             return None
 
         if (0 < calc[0] < 20) or (0 < calc[1] < 20):
             return True
         else:
             return False
+
+    def process_loads(self):
+        curr_hour = str(datetime.now().time())[:2]
+        curr_day = datetime.now().strftime("%A")
+        load_level = self.database.get_traffic_data(curr_day, curr_hour, self.env_id)
+
+        if load_level == LOW_LEVEL:
+            return 2
+        elif load_level == MEDIUM_LEVEL:
+            return 1
+        else:
+            return 0.5
+
 
 

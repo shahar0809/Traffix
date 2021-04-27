@@ -1,4 +1,4 @@
-import measurements_calculations.math_classes as geo
+from measurements_calculations.math_classes import Point
 import cv2
 import vehicles_detection.centroid_tracking as tracker
 
@@ -38,9 +38,20 @@ class Vehicle:
 
 
 class CameraDetails:
-    def __init__(self, camera_id, fps):
+    def __init__(self, name, fps, opencv_index, id=None):
+        self.name = name
+        self.opencv_index = opencv_index
         self.fps = fps
-        self.camera_id = camera_id
+        self.id = id
+
+    def get_camera_index(self):
+        return self.opencv_index
+
+    def set_name(self, name):
+        self.name = name
+
+    def get_name(self):
+        return self.name
 
     def set_fps(self, fps):
         self.fps = fps
@@ -49,15 +60,18 @@ class CameraDetails:
         return self.fps
 
     def get_id(self):
-        return self.camera_id
+        if id is None:
+            raise KeyError
+        else:
+            return self.id
 
 
 class CrosswalkDetails:
-    def __init__(self, points, width, length, above=True):
-        self.points = points
+    def __init__(self, points, width, length, is_above):
+        self.points = [Point(point[0], point[1]) for point in points]
         self.width = width
         self.length = length
-        self.is_above = False
+        self.is_above = is_above
 
     def get_points(self):
         return self.points
@@ -82,26 +96,46 @@ class CrosswalkDetails:
 
 
 class Environment:
-    def __init__(self, env_id, camera_id, crosswalk_points, bars, width, length, location):
+    def __init__(self, name, camera_id, crosswalk, bars, location, id=None):
+        self.name = name
         self.camera_id = camera_id
         self.bars = bars
-        self.crosswalk_points = crosswalk_points
-        self.environment_id = env_id
-        self.width = width
-        self.length = length
+        self.crosswalk = crosswalk
         self.location = location
+        self.id = id
+
+    def get_id(self):
+        if id is None:
+            raise KeyError
+        else:
+            return self.id
+
+    def get_name(self):
+        return self.name
+
+    def set_name(self, new_name):
+        self.name = new_name
 
     def get_location(self):
         return self.location
 
-    def get_environment_id(self):
-        return self.environment_id
+    def set_location(self, new_location):
+        self.location = new_location
 
     def get_camera_id(self):
         return self.camera_id
 
-    def set_crosswalk_details(self, crosswalk_points):
-        self.crosswalk_points = crosswalk_points
+    def set_camera_id(self, camera_id):
+        self.camera_id = camera_id
+
+    def get_crosswalk_details(self):
+        return self.crosswalk
+
+    def set_crosswalk_details(self, crosswalk):
+        self.crosswalk = crosswalk
+
+    def get_bars(self):
+        return self.bars
 
     def get_low_bar(self):
         return self.bars[LOW_BAR]
@@ -121,12 +155,44 @@ class Environment:
     def set_high_bar(self, bar):
         self.bars[HIGH_BAR] = bar
 
-    def get_width(self):
-        return self.width
+    def get_is_above(self):
+        return self.crosswalk.get_is_above()
 
-    def get_length(self):
-        return self.length
+    def set_is_above(self, is_above):
+        self.crosswalk.set_is_above(is_above)
 
+
+def draw_shape(shape, frame):
+    # Setting color and thickness of the lines drawn
+    color = [255, 0, 0]
+    thickness = 1
+
+    # Drawing each line of the shape
+    frame = cv2.line(frame, shape[0], shape[1], color, thickness)
+    frame = cv2.line(frame, shape[1], shape[2], color, thickness)
+    frame = cv2.line(frame, shape[2], shape[3], color, thickness)
+    frame = cv2.line(frame, shape[3], shape[0], color, thickness)
+
+    return frame
+
+
+def put_bounding_box(frame, vehicle):
+    box = vehicle.get_box()
+    # Extract the bounding box coordinates
+    (x, y) = (box[0], box[1])
+    (w, h) = (box[2], box[3])
+
+    # Get the color of the label detected
+    color = [0, 0, 255]
+    # Create a rectangle according to the bounding box's coordinates
+    cv2.rectangle(frame, (x, y), (x + w, y + h), color, 1)
+
+    text = str(vehicle.get_id()) + ": " +\
+        str('%.2f' % vehicle.get_distance())
+
+    cv2.putText(frame, text, (x, y - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.4, color, 1)
+    frame = cv2.circle(frame, tracker.CentroidTracker.calculate_centroid(box), radius=2, color=(0, 100, 200), thickness=2)
+    return frame
 
 class CaptureCrosswalk:
     def __init__(self):
@@ -161,36 +227,3 @@ class CaptureCrosswalk:
             elif key == ord("c"):
                 cv2.destroyAllWindows()
                 return self.crosswalk
-
-
-def draw_shape(shape, frame):
-    # Setting color and thickness of the lines drawn
-    color = [255, 0, 0]
-    thickness = 1
-
-    # Drawing each line of the shape
-    frame = cv2.line(frame, shape[0], shape[1], color, thickness)
-    frame = cv2.line(frame, shape[1], shape[2], color, thickness)
-    frame = cv2.line(frame, shape[2], shape[3], color, thickness)
-    frame = cv2.line(frame, shape[3], shape[0], color, thickness)
-
-    return frame
-
-
-def put_bounding_box(frame, vehicle):
-    box = vehicle.get_box()
-    # Extract the bounding box coordinates
-    (x, y) = (box[0], box[1])
-    (w, h) = (box[2], box[3])
-
-    # Get the color of the label detected
-    color = [0, 0, 255]
-    # Create a rectangle according to the bounding box's coordinates
-    cv2.rectangle(frame, (x, y), (x + w, y + h), color, 1)
-
-    text = str(vehicle.get_id()) + ": " +\
-        str('%.2f' % vehicle.get_distance())
-
-    cv2.putText(frame, text, (x, y - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.4, color, 1)
-    frame = cv2.circle(frame, tracker.CentroidTracker.calculate_centroid(box), radius=2, color=(0, 100, 200), thickness=2)
-    return frame

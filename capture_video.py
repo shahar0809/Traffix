@@ -1,4 +1,5 @@
 import cv2
+import time
 
 
 class Capture:
@@ -12,40 +13,42 @@ class Capture:
     @:cvar TIME_GAP: A frame gets stored each TIME_GAP iterations
     """
 
-    GROUP_SIZE = 3
-    TIME_GAP = 30
-    _iteration = 0
-    _curr_frames = []
+    def __init__(self, frames_queue, result_queue):
+        self.frames_queue = frames_queue
+        self.results_queue = result_queue
+        self.width = 0
+        self.height = 0
+        self.GROUP_SIZE = 3
+        self.TIME_GAP = 30
+        self._iteration = 0
+        self._curr_frames = []
+        self.video_cap = None
 
-    def video_capture(self):
-        raise NotImplementedError
-
-    def capture_frames(self, frames_queue):
+    def capture_frames(self, stop_event):
         """
         Gets the frames from the video source (Pure virtual function).
         @:param self: Instance of the Capture class
         @:return: None
         """
         print("capture frame")
-        cap = self.video_capture()
-
-        while True:
+        self.assign_video_cap()
+        while not stop_event.is_set():
             # Capture frame-by-frame
-            ret, frame = cap.read()
+            ret, frame = self.video_cap.read()
             if ret is False: break
-
-            cv2.imshow('Traffix', frame)
-            self.add_frame(frame, frames_queue)
+            self.add_frame(frame)
 
             # Exiting program if the 'q' key was pressed
-            if self.handle_keys(frames_queue) is True: break
+            if self.handle_keys() is True: break
             self._iteration += 1
+            print("CAPTURE")
+            time.sleep(2)
 
         # When everything is done, release the capture
-        cap.release()
+        self.video_cap.release()
         cv2.destroyAllWindows()
 
-    def add_frame(self, frame, frames_queue):
+    def add_frame(self, frame):
         """
         Adds a frame to the list containing groups of frames.
         :param frame: The frame to be added
@@ -57,23 +60,23 @@ class Capture:
             self._curr_frames += [frame]
 
         if len(self._curr_frames) == self.GROUP_SIZE:
-            frames_queue.put(self._curr_frames)
+            self.frames_queue.put(self._curr_frames)
             self._curr_frames = [self._curr_frames[1], self._curr_frames[2]]
 
-    def get_frames(self, frames_queue):
+    def get_frames(self):
         """
         Retrieves the current group of frames in the list.
         :return: Current group of frames
         @:rtype: List containing 3 frames
         """
         print("get frame")
-        if frames_queue.qsize() == 0:
+        if self.frames_queue.qsize() == 0:
             raise Exception("Not enough frames!")
 
         else:
-            return frames_queue.get()
+            return self.frames_queue.get()
 
-    def handle_keys(self, frames_queue):
+    def handle_keys(self):
         """
         Handles events of keys being pressed.
         @:keyword: If 'g' is pressed: The function 'get_frames' gets called.
@@ -87,41 +90,51 @@ class Capture:
         # Getting the current group of frames
         if pressed_key == ord('g'):
             try:
-                print(len(self.get_frames(frames_queue)))
+                print(len(self.get_frames()))
 
             except Exception as e:
                 print(e), print()
 
         return pressed_key == ord('q')
 
+    def assign_dimensions(self):
+        print("is:" + str(self.video_cap.isOpened()))
+        if self.video_cap.isOpened():
+            self.width = int(self.video_cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+            self.height = int(self.video_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
+    def get_dimensions(self):
+        return self.width, self.height
+
+    def get_param(self):
+        raise NotImplementedError
+
+    def assign_video_cap(self):
+        try:
+            print(self.get_param())
+            self.video_cap = cv2.VideoCapture(self.get_param())
+            if not self.video_cap.isOpened():
+                print("Error opening video")
+        except Exception as e:
+            print(e)
+
 
 class LiveCapture(Capture):
-    def video_capture(self):
-        return cv2.VideoCapture(0)
+    def __init__(self, frames_queue, result_queue, camera_index):
+        super().__init__(frames_queue, result_queue)
+        self.camera_index = camera_index
+
+    def get_param(self):
+        return self.camera_index
 
 
 class StaticCapture(Capture):
-    def __init__(self, video_path):
+    def __init__(self, frames_queue, result_queue, video_path):
+        """
+        :type video_path: str
+        """
+        super().__init__(frames_queue, result_queue)
         self.video_path = video_path
 
-    def video_capture(self):
-        return cv2.VideoCapture(self.video_path)
-
-
-def user_interaction(video_path=None):
-    STORED_VIDEO = 1
-    LIVE_FOOTAGE = 2
-
-    if video_path is not None:
-        return StaticCapture(video_path)
-
-    print("Choose an option")
-    print(str(STORED_VIDEO) + " - To play a specific video")
-    print(str(LIVE_FOOTAGE) + " - To capture live footage from webcam")
-    choice = int(input("\n"))
-
-    if choice == LIVE_FOOTAGE:
-        return LiveCapture()
-    else:
-        video_path = input("Enter the path of the video:\n").replace('"', '')
-        return StaticCapture(video_path)
+    def get_param(self):
+        return self.video_path
