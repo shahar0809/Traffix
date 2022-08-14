@@ -9,7 +9,7 @@ Clone the project.
 Run the requirements script to install all the required libraries.
 
 ```bash
-python requirements.txt
+pip install -r requirements.txt
 ```
 
 ## Usage
